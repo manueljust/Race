@@ -27,7 +27,7 @@ namespace Race
 
             try
             {
-                Track = Track.FromSvg(@"C:\Users\manu\Desktop\Track2.svg");
+                Track = Track.FromSvg(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\Track2.svg");
             }
             catch (Exception ex)
             {
@@ -35,18 +35,20 @@ namespace Race
                 Track = Tracks.GetTrack(1);
             }
 
+            double i = 1;
             foreach (Car c in Cars)
             {
+                c.Position = Track.StartPoint + (i / (Cars.Count + 1)) * Track.StartLine;
+                c.Angle = -Math.Atan2(Track.StartLine.X, Track.StartLine.Y);
                 c.PropertyChanged += Car_PropertyChanged;
                 _trails[c] = new List<Tuple<Ellipse, Line>>();
-                c.Position = Track.StartPoint;
-                c.Angle = Track.StartAngle;
+                i += 1;
             }
+
             Car = Cars[0];
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Car)));
 
             DrawTrack();
-
 
             Loaded += (o, e) => DrawTargetEllipse();
         }

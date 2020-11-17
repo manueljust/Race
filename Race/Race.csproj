@@ -55,7 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Helper.cs" />
+    <Compile Include="SvgHelper.cs" />
     <Compile Include="PropertyChangedAware.cs" />
     <Compile Include="Track.cs" />
     <Compile Include="Tracks.cs" />

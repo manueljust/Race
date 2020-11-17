@@ -29,7 +29,7 @@ namespace Race
             set { SetProperty(ref _targetAngle, value); }
         }
 
-        private double _targetPower = 0.5;
+        private double _targetPower = 1;
         public double TargetPower
         {
             get { return _targetPower; }
