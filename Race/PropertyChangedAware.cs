@@ -30,7 +30,7 @@ namespace Race
         /// </returns>
         protected bool SetProperty<T>(ref T target, T value, [CallerMemberName] string propertyName = null)
         {
-            if (target.Equals(value))
+            if (Equals(target, value))
             {
                 return false;
             }
