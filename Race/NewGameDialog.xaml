@@ -6,34 +6,57 @@
         xmlns:local="clr-namespace:Race"
         mc:Ignorable="d"
         Name="thisNGD"
-        Title="New Game" Height="450" Width="800">
-    <StackPanel>
-        <DockPanel LastChildFill="True">
-            <Label DockPanel.Dock="Left" Content="Track" />
+        Title="New Game" Height="250" Width="500">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" MinWidth="80" />
+            <ColumnDefinition Width="10*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Label Grid.Column="0" Grid.Row="0" Content="Track" />
+        <DockPanel Grid.Column="1" Grid.Row="0" LastChildFill="True">
             <Button DockPanel.Dock="Right" Content="browse" Click="ButtonBrowse_Click" />
-            <TextBox x:Name="TextBoxTrackFileName" Text="Tracks\Track1.svg" VerticalContentAlignment="Center" />
+            <TextBox Text="{Binding ElementName=thisNGD, Path=Result.TrackFileName, Mode=TwoWay}" VerticalContentAlignment="Center" />
         </DockPanel>
-        <DockPanel LastChildFill="True">
-            <Label DockPanel.Dock="Left" Content="Players" />
-            <DataGrid ItemsSource="{Binding ElementName=thisNGD, Path=Players, Mode=TwoWay}" AutoGenerateColumns="True">
-                <!--<DataGrid.Columns>
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
-                    <DataGridTemplateColumn Header="Color">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <xctk:ColorPicker SelectedColor="{Binding Color, UpdateSourceTrigger=PropertyChanged}" DisplayColorAndName="True" />
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>-->
-            </DataGrid>
-        </DockPanel>
-        <DockPanel LastChildFill="True">
-            <Label DockPanel.Dock="Left" Content="Direction" />
-            <RadioButton DockPanel.Dock="Left" x:Name="RadioButtonCW" GroupName="Direction" Content="Clockwise" VerticalContentAlignment="Center" IsChecked="True" />
-            <RadioButton DockPanel.Dock="Left" x:Name="RadioButtonCCW" GroupName="Direction" Content="Counterclockwise" VerticalContentAlignment="Center" />
-            <TextBlock />
-        </DockPanel>
-        <Button Content="Start" Click="ButtonStart_Click" />
-    </StackPanel>
+        <Label Grid.Column="0" Grid.Row="1" DockPanel.Dock="Left" Content="Direction" />
+        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
+            <StackPanel.Resources>
+                <local:ComparisonConverter x:Key="ComparisonConverter" />
+            </StackPanel.Resources>
+            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}}" />
+            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}}" />
+        </StackPanel>
+        <Label Grid.Column="0" Grid.Row="2" Content="Players" />
+        <DataGrid Grid.Column="1" Grid.Row="2" ItemsSource="{Binding ElementName=thisNGD, Path=Result.Players, Mode=TwoWay}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridTemplateColumn Header="Color">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{x:Static local:Player.PredefinedColors}" SelectedValue="{Binding Color, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Rectangle Width="16" Height="16" Margin="0,2,5,2">
+                                                <Rectangle.Fill>
+                                                    <SolidColorBrush Color="{Binding .}" />
+                                                </Rectangle.Fill>
+                                            </Rectangle>
+                                            <TextBlock Text="{Binding .}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Content="Start" Click="ButtonStart_Click" Margin="5" />
+    </Grid>
 </Window>

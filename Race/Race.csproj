@@ -55,10 +55,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converter.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="NewGameDialog.xaml.cs">
       <DependentUpon>NewGameDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Player.cs" />
     <Compile Include="RaceDirection.cs" />
     <Compile Include="SvgHelper.cs" />
     <Compile Include="PropertyChangedAware.cs" />

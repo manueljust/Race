@@ -22,44 +22,32 @@ namespace Race
     /// </summary>
     public partial class NewGameDialog : Window
     {
-        public class Player : PropertyChangedAware
+        public class NewGameDialogResult : PropertyChangedAware
         {
-            private string _name = "Name";
-            public string Name
+            public ObservableCollection<Player> Players { get; set; } = new ObservableCollection<Player>(Game.DefaultPlayers);
+
+            private string _trackFileName = "Tracks/Track1.svg";
+            public string TrackFileName
             {
-                get { return _name; }
-                set { SetProperty(ref _name, value); }
+                get { return _trackFileName; }
+                set { SetProperty(ref _trackFileName, value); }
             }
 
-            private Color _color = Colors.Red;
-            public Color Color
+            private RaceDirection _raceDirection = RaceDirection.Counterclockwise;
+            public RaceDirection RaceDirection
             {
-                get { return _color; }
-                set { SetProperty(ref _color, value); }
+                get { return _raceDirection; }
+                set { SetProperty(ref _raceDirection, value); }
             }
-
         }
 
-        public ObservableCollection<Player> Players { get; set; } = new ObservableCollection<Player>()
-        {
-            new Player() { Name = "Manu", Color = Colors.Teal }
-        };
-
-        public string TrackFileName { get; set; }
-
-        public RaceDirection RaceDirection { get; set; }
+        public NewGameDialogResult Result { get; } = new NewGameDialogResult();
 
         public NewGameDialog()
         {
             InitializeComponent();
-        }
 
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            TrackFileName = TextBoxTrackFileName.Text;
-            RaceDirection = true == RadioButtonCW.IsChecked ? RaceDirection.Clockwise : RaceDirection.Counterclockwise;
-
-            base.OnClosing(e);
+            Color c = Colors.Red;
         }
 
         private void ButtonBrowse_Click(object sender, RoutedEventArgs e)
@@ -67,12 +55,13 @@ namespace Race
             OpenFileDialog dlg = new OpenFileDialog();
             if (dlg.ShowDialog() == true)
             {
-                TextBoxTrackFileName.Text = dlg.FileName;
+                Result.TrackFileName = dlg.FileName;
             }
         }
 
         private void ButtonStart_Click(object sender, RoutedEventArgs e)
         {
+            DialogResult = true;
             Close();
         }
     }
