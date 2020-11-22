@@ -61,6 +61,7 @@
       <DependentUpon>NewGameDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Player.cs" />
+    <Compile Include="PowerShape.cs" />
     <Compile Include="RaceDirection.cs" />
     <Compile Include="SvgHelper.cs" />
     <Compile Include="PropertyChangedAware.cs" />

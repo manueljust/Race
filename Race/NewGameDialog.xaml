@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Race"
         mc:Ignorable="d"
         Name="thisNGD"
-        Title="New Game" Height="250" Width="500">
+        Title="New Game" Height="280" Width="520">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" MinWidth="80" />
@@ -28,13 +28,33 @@
             <StackPanel.Resources>
                 <local:ComparisonConverter x:Key="ComparisonConverter" />
             </StackPanel.Resources>
-            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}}" />
-            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}}" />
+            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
+            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
         <Label Grid.Column="0" Grid.Row="2" Content="Players" />
         <DataGrid Grid.Column="1" Grid.Row="2" ItemsSource="{Binding ElementName=thisNGD, Path=Result.Players, Mode=TwoWay}" AutoGenerateColumns="False">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridTemplateColumn Header="Ratio">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Slider Minimum="0.1" Maximum="0.9" Value="{Binding Ratio, UpdateSourceTrigger=PropertyChanged}" Width="80" />
+                                <TextBox Text="{Binding Ratio, StringFormat='{}{0:0.00}', UpdateSourceTrigger=PropertyChanged}" Width="40" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Handicap">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Slider Minimum="0.1" Maximum="1" Value="{Binding Handicap, UpdateSourceTrigger=PropertyChanged}" Width="80" />
+                                <TextBox Text="{Binding Handicap, StringFormat='{}{0:0.00}', UpdateSourceTrigger=PropertyChanged}" Width="40" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Color">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

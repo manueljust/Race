@@ -72,6 +72,8 @@ namespace Race
                     Car car = new Car() { Color = player.Color, Driver = player.Name };
                     car.Position = Track.StartPoint + (i / (players.Count() + 1)) * Track.StartLine;
                     car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(Track.StartLine.X, Track.StartLine.Y) : -Math.Atan2(-Track.StartLine.X, -Track.StartLine.Y);
+                    car.Acceleration = player.Handicap * Math.Sqrt(player.Ratio * 250 / (1.0 - player.Ratio));
+                    car.TurnRatio = player.Handicap * Math.Sqrt(250 * (1.0 - player.Ratio) / player.Ratio);
                     car.PropertyChanged += Car_PropertyChanged;
                     _trails[car] = new List<Shape>();
                     _cars.Add(car);
@@ -286,7 +288,12 @@ namespace Race
 
         private void SetAngleAndPower(Point clicked)
         {
-            Vector request = clicked - ActiveCar.Position - ActiveCar.Velocity;
+            // ellipse as bezier:
+            // https://math.stackexchange.com/questions/11698/how-elliptic-arc-can-be-represented-by-cubic-b%C3%A9zier-curve
+            // http://www.spaceroots.org/documents/ellipse/node22.html
+
+            Vector request = clicked - (ActiveCar.Position + ActiveCar.Velocity);
+            // correct that angle...
             ActiveCar.TargetAngle = Math.Atan2(request.Y, request.X) - ActiveCar.Angle;
             double maxPower = ActiveCar.Acceleration * ActiveCar.TurnRatio / Math.Sqrt(Math.Pow(ActiveCar.Acceleration * Math.Sin(ActiveCar.TargetAngle), 2) + Math.Pow(ActiveCar.TurnRatio * Math.Cos(ActiveCar.TargetAngle), 2));
             ActiveCar.TargetPower = Math.Min(1, request.Length / maxPower);
