@@ -62,6 +62,9 @@
     </Compile>
     <Compile Include="Player.cs" />
     <Compile Include="PowerShape.cs" />
+    <Compile Include="PowerShapeControl.xaml.cs">
+      <DependentUpon>PowerShapeControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RaceDirection.cs" />
     <Compile Include="SvgHelper.cs" />
     <Compile Include="PropertyChangedAware.cs" />
@@ -81,6 +84,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="NewGameDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PowerShapeControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

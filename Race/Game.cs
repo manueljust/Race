@@ -16,9 +16,9 @@ namespace Race
     {
         public static IEnumerable<Player> DefaultPlayers { get; } = new Player[]
         {
-            new Player() { Name = "Olaf", Color = Colors.Teal },
-            new Player() { Name = "Sina", Color = Colors.Red },
-            new Player() { Name = "Nero", Color = Colors.Black },
+            new Player(),
+            new Player(),
+            new Player(),
         };
 
         private readonly Random _random = new Random();
@@ -43,7 +43,13 @@ namespace Race
         public Car ActiveCar
         {
             get { return _activeCar; }
-            set { SetProperty(ref _activeCar, value); }
+            set
+            {
+                if(SetProperty(ref _activeCar, value))
+                {
+                    _targetPowerShape.MorphInto(ActiveCar.PowerShape);
+                }
+            }
         }
 
         private Track Track { get; set; }
@@ -69,14 +75,12 @@ namespace Race
                 double i = 1;
                 foreach (Player player in players.ToDictionary(p => _random.Next()).OrderBy(p => p.Key).Select(p => p.Value))
                 {
-                    Car car = new Car() { Color = player.Color, Driver = player.Name };
-                    car.Position = Track.StartPoint + (i / (players.Count() + 1)) * Track.StartLine;
-                    car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(Track.StartLine.X, Track.StartLine.Y) : -Math.Atan2(-Track.StartLine.X, -Track.StartLine.Y);
-                    car.Acceleration = player.Handicap * Math.Sqrt(player.Ratio * 250 / (1.0 - player.Ratio));
-                    car.TurnRatio = player.Handicap * Math.Sqrt(250 * (1.0 - player.Ratio) / player.Ratio);
-                    car.PropertyChanged += Car_PropertyChanged;
-                    _trails[car] = new List<Shape>();
-                    _cars.Add(car);
+
+                    player.Car.Position = Track.StartPoint + (i / (players.Count() + 1)) * Track.StartLine;
+                    player.Car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(Track.StartLine.X, Track.StartLine.Y) : -Math.Atan2(-Track.StartLine.X, -Track.StartLine.Y);
+                    player.Car.PropertyChanged += Car_PropertyChanged;
+                    _trails[player.Car] = new List<Shape>();
+                    _cars.Add(player.Car);
                     i += 1;
                 }
 
@@ -114,7 +118,7 @@ namespace Race
                 Canvas.Children.Add(p);
             }
 
-            Canvas.Children.Add(_targetEllipse);
+            Canvas.Children.Add(_targetPowerShape);
             Canvas.Children.Add(_centerLine);
             Canvas.Children.Add(_steeringLine);
 
@@ -142,7 +146,7 @@ namespace Race
         private Line _previewLine = new Line();
         private Line _centerLine = new Line() { StrokeThickness = 0.8, Stroke = Brushes.Brown, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7 };
         private Line _steeringLine = new Line() { StrokeThickness = 0.8, Stroke = Brushes.Red, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7 };
-        private Ellipse _targetEllipse = new Ellipse() { StrokeThickness = 1, Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#330088FF")) };
+        private PowerShape _targetPowerShape = new PowerShape() { StrokeThickness = 1, Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#330088FF")) };
 
         private void DrawCar(Car car)
         {
@@ -195,11 +199,9 @@ namespace Race
 
             Canvas.Children.Add(_previewLine);
 
-            Canvas.SetLeft(_targetEllipse, center.X - ActiveCar.Acceleration);
-            Canvas.SetTop(_targetEllipse, center.Y - ActiveCar.TurnRatio);
-            _targetEllipse.Height = 2 * ActiveCar.TurnRatio;
-            _targetEllipse.Width = 2 * ActiveCar.Acceleration;
-            _targetEllipse.RenderTransform = new RotateTransform(180 * ActiveCar.Angle / Math.PI, ActiveCar.Acceleration, ActiveCar.TurnRatio);
+            Canvas.SetLeft(_targetPowerShape, center.X);
+            Canvas.SetTop(_targetPowerShape, center.Y);
+            _targetPowerShape.RenderTransform = new RotateTransform(180 * ActiveCar.Angle / Math.PI);
 
             _trails[ActiveCar].Add(_previewLine);
         }
@@ -288,15 +290,10 @@ namespace Race
 
         private void SetAngleAndPower(Point clicked)
         {
-            // ellipse as bezier:
-            // https://math.stackexchange.com/questions/11698/how-elliptic-arc-can-be-represented-by-cubic-b%C3%A9zier-curve
-            // http://www.spaceroots.org/documents/ellipse/node22.html
-
             Vector request = clicked - (ActiveCar.Position + ActiveCar.Velocity);
-            // correct that angle...
+
             ActiveCar.TargetAngle = Math.Atan2(request.Y, request.X) - ActiveCar.Angle;
-            double maxPower = ActiveCar.Acceleration * ActiveCar.TurnRatio / Math.Sqrt(Math.Pow(ActiveCar.Acceleration * Math.Sin(ActiveCar.TargetAngle), 2) + Math.Pow(ActiveCar.TurnRatio * Math.Cos(ActiveCar.TargetAngle), 2));
-            ActiveCar.TargetPower = Math.Min(1, request.Length / maxPower);
+            ActiveCar.TargetPower = Math.Min(request.Length, _targetPowerShape.GetRadius(ActiveCar.TargetAngle));
         }
     }
 }

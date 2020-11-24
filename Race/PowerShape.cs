@@ -1,18 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Media.Composition;
 using System.Windows.Shapes;
 
-namespace UIPlayground
+namespace Race
 {
     public class PowerShape : Shape
     {
-        public static readonly DependencyProperty AccelerationProperty = DependencyProperty.Register(nameof(Acceleration), typeof(double), typeof(PowerShape), new PropertyMetadata(20d, RecalculateCallback));
-        public static readonly DependencyProperty DecelerationProperty = DependencyProperty.Register(nameof(Deceleration), typeof(double), typeof(PowerShape), new PropertyMetadata(15d, RecalculateCallback));
-        public static readonly DependencyProperty TurnRatioProperty = DependencyProperty.Register(nameof(TurnRatio), typeof(double), typeof(PowerShape), new PropertyMetadata(10d, RecalculateCallback));
-        public static readonly DependencyProperty AreaProperty = DependencyProperty.Register(nameof(Area), typeof(double), typeof(PowerShape), new PropertyMetadata(2000d, RecalculateCallback));
-        public static readonly DependencyProperty GeometryAreaProperty = DependencyProperty.Register(nameof(GeometryArea), typeof(double), typeof(PowerShape));
-        public static readonly DependencyProperty EdgynessProperty = DependencyProperty.Register(nameof(Edgyness), typeof(double), typeof(PowerShape), new PropertyMetadata(0.5d, RecalculateCallback, CoerceEdgyness));
+        private static readonly double MagicCircleNumber = 0.551784d;
+
+        public static readonly DependencyProperty AccelerationProperty = DependencyProperty.Register(nameof(Acceleration), typeof(double), typeof(PowerShape), new PropertyMetadata(0.8d, RecalculateCallback, CoercePower));
+        public static readonly DependencyProperty DecelerationProperty = DependencyProperty.Register(nameof(Deceleration), typeof(double), typeof(PowerShape), new PropertyMetadata(0.8d, RecalculateCallback, CoercePower));
+        public static readonly DependencyProperty TurnRatioProperty = DependencyProperty.Register(nameof(TurnRatio), typeof(double), typeof(PowerShape), new PropertyMetadata(0.5d, RecalculateCallback, CoercePower));
+        public static readonly DependencyProperty AreaProperty = DependencyProperty.Register(nameof(Area), typeof(double), typeof(PowerShape), new PropertyMetadata(100d, RecalculateCallback, CoerceArea));
+        public static readonly DependencyProperty EdgynessProperty = DependencyProperty.Register(nameof(Edgyness), typeof(double), typeof(PowerShape), new PropertyMetadata(MagicCircleNumber, RecalculateCallback, CoerceEdgyness));
 
         public double Acceleration
         {
@@ -38,12 +46,6 @@ namespace UIPlayground
             set { SetValue(AreaProperty, value); }
         }
 
-        public double GeometryArea
-        {
-            get { return (double)GetValue(GeometryAreaProperty); }
-            set { SetValue(GeometryAreaProperty, value); }
-        }
-
         public double Edgyness
         {
             get { return (double)GetValue(EdgynessProperty); }
@@ -52,20 +54,22 @@ namespace UIPlayground
 
         private static object CoerceEdgyness(DependencyObject d, object baseValue)
         {
-            double val = (double)baseValue;
-            if (double.IsNaN(val))
-            {
-                return 0.5d;
-            }
-            if (0d > val)
-            {
-                return 0d;
-            }
-            if (2d < val)
-            {
-                return 2d;
-            }
-            return val;
+            return Constrained((double)baseValue, 0, 2, MagicCircleNumber);
+        }
+
+        private static object CoercePower(DependencyObject d, object baseValue)
+        {
+            return Constrained((double)baseValue, 0.1, 1, 0.5);
+        }
+
+        private static object CoerceArea(DependencyObject d, object baseValue)
+        {
+            return Constrained((double)baseValue, 10, 100, 100);
+        }
+
+        private static double Constrained(double d, double min, double max, double defaultValue)
+        {
+            return double.IsNaN(d) ? defaultValue : min > d ? min : max < d ? max : d;
         }
 
 
@@ -77,6 +81,10 @@ namespace UIPlayground
                 ps.ReCalculate();
             }
         }
+
+        private double _scaledAcceleration = 0;
+        private double _scaledDeceleration = 0;
+        private double _scaledTurnRatio = 0;
 
         public PowerShape()
         {
@@ -92,15 +100,41 @@ namespace UIPlayground
                 new BezierSegment(new Point(Edgyness * -d, t), new Point(-d, Edgyness * t), new Point(-d, 0), true),
                 new BezierSegment(new Point(-d, Edgyness * -t), new Point(Edgyness * -d, -t), new Point(0, -t), true),
             });
-            return new PathGeometry(new PathFigure[] { new PathFigure(new Point(0, -t), segments, true) });
+            return new PathGeometry(new PathFigure[] { new PathFigure(new Point(0, -t), segments, true), new PathFigure(new Point(0, 0), new PathSegmentCollection(new PathSegment[] { new LineSegment(new Point(0, 0), true) }), true) });
         }
 
         private void ReCalculate()
         {
             double scale = Math.Sqrt(Area / GetGeometry(Acceleration, Deceleration, TurnRatio).GetArea());
-            _definingGeometry = GetGeometry(Acceleration * scale, Deceleration * scale, TurnRatio * scale);
-            GeometryArea = _definingGeometry.GetArea();
+            _scaledAcceleration = scale * Acceleration;
+            _scaledDeceleration = scale * Deceleration;
+            _scaledTurnRatio = scale * TurnRatio;
+
+            _definingGeometry = GetGeometry(_scaledAcceleration, _scaledDeceleration, _scaledTurnRatio);
+
             InvalidateVisual();
+        }
+
+        public void MorphInto(PowerShape ps)
+        {
+            Acceleration = ps.Acceleration;
+            Deceleration = ps.Deceleration;
+            TurnRatio = ps.TurnRatio;
+            Edgyness = ps.Edgyness;
+            Area = ps.Area;
+        }
+
+        public double GetRadius(double Angle)
+        {
+            double max = 2 * Math.Max(_scaledTurnRatio, Math.Max(_scaledAcceleration, _scaledDeceleration));
+            double min = 0.5 * Math.Min(_scaledTurnRatio, Math.Min(_scaledAcceleration, _scaledDeceleration));
+            LineGeometry lg = new LineGeometry(
+                new Point(min * Math.Cos(Angle), min * Math.Sin(Angle)),
+                new Point(max * Math.Cos(Angle), max * Math.Sin(Angle))
+            );
+
+            Point p = GetIntersectionPoints(lg, _definingGeometry).FirstOrDefault();
+            return new Vector(p.X, p.Y).Length;
         }
 
         private Geometry _definingGeometry = null;
@@ -110,6 +144,21 @@ namespace UIPlayground
             {
                 return _definingGeometry;
             }
+        }
+
+        public static Point[] GetIntersectionPoints(Geometry g1, Geometry g2)
+        {
+            Geometry og1 = g1.GetWidenedPathGeometry(new Pen(Brushes.Black, 0.01));
+            Geometry og2 = g2.GetWidenedPathGeometry(new Pen(Brushes.Black, 0.01));
+            CombinedGeometry cg = new CombinedGeometry(GeometryCombineMode.Intersect, og1, og2);
+            PathGeometry pg = cg.GetFlattenedPathGeometry();
+            Point[] result = new Point[pg.Figures.Count];
+            for (int i = 0; i < pg.Figures.Count; i++)
+            {
+                Rect fig = new PathGeometry(new PathFigure[] { pg.Figures[i] }).Bounds;
+                result[i] = new Point(fig.Left + fig.Width / 2.0, fig.Top + fig.Height / 2.0);
+            }
+            return result;
         }
     }
 }
