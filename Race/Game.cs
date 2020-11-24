@@ -285,7 +285,7 @@ namespace Race
             Vector request = clicked - (ActiveCar.Position + ActiveCar.Velocity);
 
             ActiveCar.TargetAngle = Math.Atan2(request.Y, request.X) - ActiveCar.Angle;
-            ActiveCar.TargetPower = Math.Min(request.Length, _targetPowerShape.GetRadius(ActiveCar.TargetAngle));
+            ActiveCar.TargetPower = Math.Min(1, request.Length / _targetPowerShape.GetRadius(ActiveCar.TargetAngle));
         }
     }
 }

@@ -31,7 +31,6 @@
         </StackPanel>
         <Viewbox Stretch="Uniform" >
             <ContentPresenter Content="{Binding ElementName=thisMW, Path=Game.Canvas}" />
-            <!--<Canvas x:Name="Canvas" />-->
         </Viewbox>
     </DockPanel>
 </Window>

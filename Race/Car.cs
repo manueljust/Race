@@ -71,8 +71,9 @@ namespace Race
         public Point GetTarget()
         {
             Point target = Position + Velocity;
-            target.X += TargetPower * Math.Cos(TargetAngle + Angle);
-            target.Y += TargetPower * Math.Sin(TargetAngle + Angle);
+            double targetRadius = TargetPower * PowerShape.GetRadius(TargetAngle);
+            target.X += targetRadius * Math.Cos(TargetAngle + Angle);
+            target.Y += targetRadius * Math.Sin(TargetAngle + Angle);
 
             return target;
         }
