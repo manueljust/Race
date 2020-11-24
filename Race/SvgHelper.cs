@@ -60,6 +60,7 @@ namespace Race
                             Center = new Point(element.GetDouble("cx"), element.GetDouble("cy")),
                             RadiusX = element.GetDouble("r"),
                             RadiusY = element.GetDouble("r"),
+                            Transform = element.GetTransform(),
                         });
                         break;
                     case "ellipse":
@@ -68,6 +69,7 @@ namespace Race
                             Center = new Point(element.GetDouble("cx"), element.GetDouble("cy")),
                             RadiusX = element.GetDouble("rx"),
                             RadiusY = element.GetDouble("ry"),
+                            Transform = element.GetTransform(),
                         });
                         break;
                     case "line":
@@ -75,12 +77,13 @@ namespace Race
                         {
                             StartPoint = new Point(element.GetDouble("x1"), element.GetDouble("y1")),
                             EndPoint = new Point(element.GetDouble("x2"), element.GetDouble("y2")),
+                            Transform = element.GetTransform(),
                         });
                         break;
                     case "path":
                         // determine fillrule and transform
                         FillRule fillRule = style.ContainsKey("fill-rule") ? style["fill-rule"] == "nonzero" ? FillRule.Nonzero : FillRule.EvenOdd : FillRule.EvenOdd;
-                        Transform transform = Transform.Identity;
+                        Transform transform = element.GetTransform();
                         path.Data = new PathGeometry((PathFigureCollection)(new PathFigureCollectionConverter()).ConvertFromString(element.Attribute("d").Value), fillRule, transform);
                         break;
                     case "polygon":
@@ -101,6 +104,7 @@ namespace Race
                             Rect = new Rect(new Point(element.GetDouble("x"), element.GetDouble("y")), new Size(element.GetDouble("width"), element.GetDouble("height"))),
                             RadiusX = element.GetDouble("rx"),
                             RadiusY = element.GetDouble("ry", element.GetDouble("rx")),
+                            Transform = element.GetTransform(),
                         });
                         break;
                     case "text":
@@ -115,6 +119,7 @@ namespace Race
                 if (isPath)
                 {
                     path.ApplyStyle(style);
+                    //path.GeometryTransform = element.GetTransform();
 
                     switch (element.GetDescription()?.ToLower())
                     {
@@ -288,7 +293,11 @@ namespace Race
                 ParseBrush(style["fill"])
                 );
 
-            return text.BuildGeometry(new Point(element.GetDouble("x"), element.GetDouble("y")));
+            Geometry geometry = text.BuildGeometry(new Point(element.GetDouble("x"), element.GetDouble("y")));
+            geometry.Transform = element.GetTransform();
+
+            return geometry;
+
         }
 
         public static string GetDescription(this XElement element)
@@ -323,6 +332,52 @@ namespace Race
 
             return style;
         }
+
+        public static Transform GetTransform(this XElement element)
+        {
+            string transform = element.Attribute("transform")?.Value;
+            if (null == transform) return Transform.Identity;
+
+            try
+            {
+                string[] v = transform.Substring(transform.IndexOf('(') + 1).Trim(')').Split(new char[] { ' ', ',' });
+
+                if(transform.StartsWith("matrix", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return new MatrixTransform(double.Parse(v[0]), double.Parse(v[1]), double.Parse(v[2]), double.Parse(v[3]), double.Parse(v[4]), double.Parse(v[5]));
+                }
+                if (transform.StartsWith("translate", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    double y = v.Length == 2 ? double.Parse(v[1]) : 0;
+                    return new TranslateTransform(double.Parse(v[0]), 0);
+                }
+                if (transform.StartsWith("scale", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    double y = v.Length == 2 ? double.Parse(v[1]) : double.Parse(v[0]);
+                    return new ScaleTransform(double.Parse(v[0]), y);
+                }
+                if (transform.StartsWith("rotate", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    double x = v.Length == 3 ? double.Parse(v[1]) : 0;
+                    double y = v.Length == 3 ? double.Parse(v[2]) : 0;
+                    return new RotateTransform(double.Parse(v[0]), x, y);
+                }
+                if (transform.StartsWith("skewx", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return new SkewTransform(double.Parse(v[0]), 0);
+                }
+                if (transform.StartsWith("skewy", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return new SkewTransform(0, double.Parse(v[0]));
+                }
+            }
+            catch
+            {
+                // ignore parse errors
+            }
+            return Transform.Identity;
+        }
+
 
         public static void ApplyStyle(this Path path, Dictionary<string, string> style)
         {
