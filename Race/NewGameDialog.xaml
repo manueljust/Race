@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Race"
         mc:Ignorable="d"
         Name="thisNGD"
-        Title="New Game" Height="280" Width="520">
+        Title="New Game" Height="600" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" MinWidth="80" />
@@ -34,7 +34,7 @@
         <Label Grid.Column="0" Grid.Row="2" Content="Cars" />
         <DataGrid Grid.Column="1" Grid.Row="2" ItemsSource="{Binding ElementName=thisNGD, Path=Result.Cars, Mode=TwoWay}" AutoGenerateColumns="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Driver, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridTextColumn Header="Driver" Binding="{Binding Driver, UpdateSourceTrigger=PropertyChanged}" />
                 <DataGridTemplateColumn Header="PowerShape">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -64,6 +64,6 @@
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
-        <Button Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Content="Start" Click="ButtonStart_Click" Margin="5" />
+        <Button Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" Content="Start" Click="ButtonStart_Click" Margin="25" Width="100" Height="50" />
     </Grid>
 </Window>
