@@ -31,21 +31,21 @@
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
-        <Label Grid.Column="0" Grid.Row="2" Content="Players" />
-        <DataGrid Grid.Column="1" Grid.Row="2" ItemsSource="{Binding ElementName=thisNGD, Path=Result.Players, Mode=TwoWay}" AutoGenerateColumns="False">
+        <Label Grid.Column="0" Grid.Row="2" Content="Cars" />
+        <DataGrid Grid.Column="1" Grid.Row="2" ItemsSource="{Binding ElementName=thisNGD, Path=Result.Cars, Mode=TwoWay}" AutoGenerateColumns="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Car.Driver, UpdateSourceTrigger=PropertyChanged}" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Driver, UpdateSourceTrigger=PropertyChanged}" />
                 <DataGridTemplateColumn Header="PowerShape">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <local:PowerShapeControl PowerShape="{Binding Car.PowerShape, UpdateSourceTrigger=PropertyChanged}" />
+                            <local:PowerShapeControl PowerShape="{Binding PowerShape, UpdateSourceTrigger=PropertyChanged}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Color">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ComboBox ItemsSource="{x:Static local:Player.PredefinedColors}" SelectedValue="{Binding Car.Color, UpdateSourceTrigger=PropertyChanged}">
+                            <ComboBox ItemsSource="{x:Static local:Car.PredefinedColors}" SelectedValue="{Binding Color, UpdateSourceTrigger=PropertyChanged}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">

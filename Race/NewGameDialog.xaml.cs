@@ -24,7 +24,7 @@ namespace Race
     {
         public class NewGameDialogResult : PropertyChangedAware
         {
-            public ObservableCollection<Player> Players { get; set; } = new ObservableCollection<Player>(Game.DefaultPlayers);
+            public ObservableCollection<Car> Cars { get; set; } = new ObservableCollection<Car>(Car.DefaultCars);
 
             private string _trackFileName = "Tracks/Track1.svg";
             public string TrackFileName

@@ -88,6 +88,8 @@ namespace Race
 
         public PowerShape()
         {
+            Stroke = Brushes.Black;
+            StrokeThickness = 1;
             ReCalculate();
         }
 

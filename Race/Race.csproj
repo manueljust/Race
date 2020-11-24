@@ -60,7 +60,6 @@
     <Compile Include="NewGameDialog.xaml.cs">
       <DependentUpon>NewGameDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Player.cs" />
     <Compile Include="PowerShape.cs" />
     <Compile Include="PowerShapeControl.xaml.cs">
       <DependentUpon>PowerShapeControl.xaml</DependentUpon>

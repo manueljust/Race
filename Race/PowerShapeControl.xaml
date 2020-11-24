@@ -6,10 +6,20 @@
              xmlns:local="clr-namespace:Race"
              mc:Ignorable="d"
              x:Name="thisPSC"
-             d:DesignHeight="300" d:DesignWidth="300">
-    <StackPanel Orientation="Horizontal">
-        <ContentPresenter Content="{Binding ElementName=thisPSC, Path=PowerShape}" Margin="20,20,0,0" />
-
+             d:DesignHeight="120" d:DesignWidth="340">
+    <StackPanel Orientation="Horizontal" Height="120" Width="340">
+        <Border Background="AliceBlue">
+            <Viewbox Stretch="Uniform" Width="150" Height="120">
+                <Viewbox.Clip>
+                    <RectangleGeometry>
+                        <RectangleGeometry.Rect>
+                            <Rect Height="110" Width="150" />
+                        </RectangleGeometry.Rect>
+                    </RectangleGeometry>
+                </Viewbox.Clip>
+                <ContentPresenter Content="{Binding ElementName=thisPSC, Path=PowerShape}" />
+            </Viewbox>
+        </Border>
         <Expander Header="Customize">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -22,10 +32,23 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Column="0" Grid.Row="0" Text="Acceleration" />
-                <Slider Grid.Column="1" Grid.Row="0" Minimum="0.1" Maximum="1" Value="{Binding ElementName=thisPSC, Path=PowerShape.Acceleration}" />
-                <TextBox Grid.Column="2" Grid.Row="0" Text="{Binding ElementName=thisPSC, Path=PowerShape.Acceleration, StringFormat='{}{0.##}'}" />
+                <Slider Grid.Column="1" Grid.Row="0" Minimum="0.1" Maximum="1" Value="{Binding ElementName=thisPSC, Path=PowerShape.Acceleration, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="2" Grid.Row="0" Text="{Binding ElementName=thisPSC, Path=PowerShape.Acceleration, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:0.##}'}" />
+                <TextBlock Grid.Column="0" Grid.Row="1" Text="Deceleration" />
+                <Slider Grid.Column="1" Grid.Row="1" Minimum="0.1" Maximum="1" Value="{Binding ElementName=thisPSC, Path=PowerShape.Deceleration, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding ElementName=thisPSC, Path=PowerShape.Deceleration, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:0.##}'}" />
+                <TextBlock Grid.Column="0" Grid.Row="2" Text="TurnRatio" />
+                <Slider Grid.Column="1" Grid.Row="2" Minimum="0.1" Maximum="1" Value="{Binding ElementName=thisPSC, Path=PowerShape.TurnRatio, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="2" Grid.Row="2" Text="{Binding ElementName=thisPSC, Path=PowerShape.TurnRatio, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:0.##}'}" />
+                <TextBlock Grid.Column="0" Grid.Row="3" Text="Edgyness" />
+                <Slider Grid.Column="1" Grid.Row="3" Minimum="0" Maximum="2" Value="{Binding ElementName=thisPSC, Path=PowerShape.Edgyness, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="2" Grid.Row="3" Text="{Binding ElementName=thisPSC, Path=PowerShape.Edgyness, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:0.##}'}" />
+                <TextBlock Grid.Column="0" Grid.Row="4" Text="Handicap" />
+                <Slider Grid.Column="1" Grid.Row="4" Minimum="10" Maximum="100" Value="{Binding ElementName=thisPSC, Path=PowerShape.Area, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBox Grid.Column="2" Grid.Row="4" Text="{Binding ElementName=thisPSC, Path=PowerShape.Area, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:0.##}'}" />
             </Grid>
         </Expander>
     </StackPanel>

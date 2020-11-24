@@ -14,13 +14,6 @@ namespace Race
 {
     public class Game : PropertyChangedAware
     {
-        public static IEnumerable<Player> DefaultPlayers { get; } = new Player[]
-        {
-            new Player(),
-            new Player(),
-            new Player(),
-        };
-
         private readonly Random _random = new Random();
 
         private Canvas _canvas;
@@ -60,10 +53,10 @@ namespace Race
         {
             Canvas = new Canvas();
 
-            NewGame(@"Tracks\Track1.svg", DefaultPlayers, 0 == _random.Next() % 2 ? RaceDirection.Clockwise : RaceDirection.Counterclockwise);
+            NewGame(@"Tracks\Track1.svg", Car.DefaultCars, 0 == _random.Next() % 2 ? RaceDirection.Clockwise : RaceDirection.Counterclockwise);
         }
 
-        public void NewGame(string filename, IEnumerable<Player> players, RaceDirection direction)
+        public void NewGame(string filename, IEnumerable<Car> cars, RaceDirection direction)
         {
             Canvas.Children.Clear();
             _cars.Clear();
@@ -73,14 +66,13 @@ namespace Race
                 Track = SvgHelper.Load(filename);
 
                 double i = 1;
-                foreach (Player player in players.ToDictionary(p => _random.Next()).OrderBy(p => p.Key).Select(p => p.Value))
+                foreach (Car car in cars.ToDictionary(p => _random.Next()).OrderBy(p => p.Key).Select(p => p.Value))
                 {
-
-                    player.Car.Position = Track.StartPoint + (i / (players.Count() + 1)) * Track.StartLine;
-                    player.Car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(Track.StartLine.X, Track.StartLine.Y) : -Math.Atan2(-Track.StartLine.X, -Track.StartLine.Y);
-                    player.Car.PropertyChanged += Car_PropertyChanged;
-                    _trails[player.Car] = new List<Shape>();
-                    _cars.Add(player.Car);
+                    car.Position = Track.StartPoint + (i / (cars.Count() + 1)) * Track.StartLine;
+                    car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(Track.StartLine.X, Track.StartLine.Y) : -Math.Atan2(-Track.StartLine.X, -Track.StartLine.Y);
+                    car.PropertyChanged += Car_PropertyChanged;
+                    _trails[car] = new List<Shape>();
+                    _cars.Add(car);
                     i += 1;
                 }
 

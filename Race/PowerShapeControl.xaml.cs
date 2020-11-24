@@ -23,14 +23,21 @@ namespace Race
         public static readonly DependencyProperty PowerShapeProperty = DependencyProperty.Register(
             nameof(PowerShape),
             typeof(PowerShape),
-            typeof(PowerShapeControl)//,
-//            new PropertyMetadata(new PowerShape() { Stroke = Brushes.LightBlue, StrokeThickness = 2 })
+            typeof(PowerShapeControl),
+            new PropertyMetadata(null, OnPowerShapeChanged)
             );
 
         public PowerShape PowerShape
         {
             get { return (PowerShape)GetValue(PowerShapeProperty); }
             set { SetValue(PowerShapeProperty, value); }
+        }
+
+        private static void OnPowerShapeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            PowerShape ps = (PowerShape)e.NewValue;
+            ps.RenderTransform = new MatrixTransform(0.2, 0, 0, 0.2, 4, 2.5);
+            ps.StrokeThickness = 0.75;
         }
 
         public PowerShapeControl()

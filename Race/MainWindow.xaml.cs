@@ -40,7 +40,7 @@ namespace Race
             NewGameDialog dlg = new NewGameDialog();
             dlg.ShowDialog();
 
-            Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Players, dlg.Result.RaceDirection);
+            Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection);
 
             e.Handled = true;
         }
