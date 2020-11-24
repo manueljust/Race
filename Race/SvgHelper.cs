@@ -14,7 +14,6 @@ namespace Race
     {
         public static Track Load(string fileName)
         {
-
             Track track = new Track()
             {
                 StartPoint = new Point(65, 40),
@@ -23,9 +22,6 @@ namespace Race
                 Height = 150,
                 Background = Brushes.ForestGreen,
             };
-
-            List<Path> decorations = new List<Path>();
-            List<Path> obstacles = new List<Path>();
 
             XDocument xdoc = XDocument.Load(fileName);
 
@@ -40,88 +36,13 @@ namespace Race
                 // ignore errors, keep default width and height
             }
 
+            List<Path> decorations = new List<Path>();
+            List<Path> obstacles = new List<Path>();
             foreach (XElement element in xdoc.Descendants())
             {
-                Path path = new Path()
+                if (element.TryGetPath(out Path path))
                 {
-                    Fill = element.GetBrush("fill"),
-                    Stroke = element.GetBrush("stroke"),
-                };
-
-                bool isPath = true;
-
-                Dictionary<string, string> style = element.GetStyle();
-
-                switch (element.Name.LocalName.ToLower())
-                {
-                    case "circle":
-                        path.Data = PathGeometry.CreateFromGeometry(new EllipseGeometry()
-                        {
-                            Center = new Point(element.GetDouble("cx"), element.GetDouble("cy")),
-                            RadiusX = element.GetDouble("r"),
-                            RadiusY = element.GetDouble("r"),
-                            Transform = element.GetTransform(),
-                        });
-                        break;
-                    case "ellipse":
-                        path.Data = PathGeometry.CreateFromGeometry(new EllipseGeometry()
-                        {
-                            Center = new Point(element.GetDouble("cx"), element.GetDouble("cy")),
-                            RadiusX = element.GetDouble("rx"),
-                            RadiusY = element.GetDouble("ry"),
-                            Transform = element.GetTransform(),
-                        });
-                        break;
-                    case "line":
-                        path.Data = PathGeometry.CreateFromGeometry(new LineGeometry()
-                        {
-                            StartPoint = new Point(element.GetDouble("x1"), element.GetDouble("y1")),
-                            EndPoint = new Point(element.GetDouble("x2"), element.GetDouble("y2")),
-                            Transform = element.GetTransform(),
-                        });
-                        break;
-                    case "path":
-                        // determine fillrule and transform
-                        FillRule fillRule = style.ContainsKey("fill-rule") ? style["fill-rule"] == "nonzero" ? FillRule.Nonzero : FillRule.EvenOdd : FillRule.EvenOdd;
-                        Transform transform = element.GetTransform();
-                        path.Data = new PathGeometry((PathFigureCollection)(new PathFigureCollectionConverter()).ConvertFromString(element.Attribute("d").Value), fillRule, transform);
-                        break;
-                    case "polygon":
-                        path.Data = PathGeometry.CreateFromGeometry((new Polygon()
-                        {
-                            Points = new PointCollection(element.Attribute("points").Value.Split(' ').Select(s => Point.Parse(s))),
-                        }).RenderedGeometry);
-                        break;
-                    case "polyline":
-                        path.Data = PathGeometry.CreateFromGeometry((new Polyline()
-                        {
-                            Points = new PointCollection(element.Attribute("points").Value.Split(' ').Select(s => Point.Parse(s))),
-                        }).RenderedGeometry);
-                        break;
-                    case "rect":
-                        path.Data = PathGeometry.CreateFromGeometry(new RectangleGeometry()
-                        {
-                            Rect = new Rect(new Point(element.GetDouble("x"), element.GetDouble("y")), new Size(element.GetDouble("width"), element.GetDouble("height"))),
-                            RadiusX = element.GetDouble("rx"),
-                            RadiusY = element.GetDouble("ry", element.GetDouble("rx")),
-                            Transform = element.GetTransform(),
-                        });
-                        break;
-                    case "text":
-                        path.Data = PathGeometry.CreateFromGeometry(element.GetTextGeometry());
-                        break;
-                    case "image":
-                    default:
-                        isPath = false;
-                        break;
-                }
-
-                if (isPath)
-                {
-                    path.ApplyStyle(style);
-                    //path.GeometryTransform = element.GetTransform();
-
-                    switch (element.GetDescription()?.ToLower())
+                    switch (element.GetDescription().ToLower())
                     {
                         case "bounds":
                             track.Bounds = path;
@@ -130,7 +51,6 @@ namespace Race
                             track.Start = path;
                             track.StartPoint = path.Data.Bounds.Location;
                             track.StartLine = new Vector(path.Data.Bounds.Width, path.Data.Bounds.Height);
-                            // get outline, determine center
                             break;
                         case "goal":
                             track.Goal = path;
@@ -144,16 +64,15 @@ namespace Race
                     }
                 }
             }
-
             track.Obstacles = obstacles.ToArray();
             track.Decorations = decorations.ToArray();
 
             if (null == track.Goal)
             {
+                // encoding and parsing seems to be the most straightforward method to deep copy
                 track.Goal = (Path)System.Windows.Markup.XamlReader.Parse(System.Windows.Markup.XamlWriter.Save(track.Start));
                 track.Goal.Opacity = 0;
             }
-
             if (null == track.Bounds)
             {
                 throw new InvalidOperationException("No element with description \"bounds\" found.");
@@ -166,6 +85,7 @@ namespace Race
             return track;
         }
 
+        #region parse helpers
         public static Brush ParseBrush(string s)
         {
             try
@@ -249,7 +169,9 @@ namespace Race
                 return 0;
             }
         }
+        #endregion
 
+        #region XElement extensions
         public static double GetDouble(this XElement element, string name, double defaultValue = 0)
         {
             XAttribute att = element.Attribute(name);
@@ -309,7 +231,7 @@ namespace Race
                     return child.Value;
                 }
             }
-            return null;
+            return "";
         }
 
         public static Dictionary<string, string> GetStyle(this XElement element)
@@ -331,6 +253,89 @@ namespace Race
             }
 
             return style;
+        }
+
+        public static bool TryGetPath(this XElement element, out Path path)
+        {
+            path = new Path()
+            {
+                Fill = element.GetBrush("fill"),
+                Stroke = element.GetBrush("stroke"),
+            };
+
+            bool isPath = true;
+
+            Dictionary<string, string> style = element.GetStyle();
+
+            switch (element.Name.LocalName.ToLower())
+            {
+                case "circle":
+                    path.Data = PathGeometry.CreateFromGeometry(new EllipseGeometry()
+                    {
+                        Center = new Point(element.GetDouble("cx"), element.GetDouble("cy")),
+                        RadiusX = element.GetDouble("r"),
+                        RadiusY = element.GetDouble("r"),
+                        Transform = element.GetTransform(),
+                    });
+                    break;
+                case "ellipse":
+                    path.Data = PathGeometry.CreateFromGeometry(new EllipseGeometry()
+                    {
+                        Center = new Point(element.GetDouble("cx"), element.GetDouble("cy")),
+                        RadiusX = element.GetDouble("rx"),
+                        RadiusY = element.GetDouble("ry"),
+                        Transform = element.GetTransform(),
+                    });
+                    break;
+                case "line":
+                    path.Data = PathGeometry.CreateFromGeometry(new LineGeometry()
+                    {
+                        StartPoint = new Point(element.GetDouble("x1"), element.GetDouble("y1")),
+                        EndPoint = new Point(element.GetDouble("x2"), element.GetDouble("y2")),
+                        Transform = element.GetTransform(),
+                    });
+                    break;
+                case "path":
+                    FillRule fillRule = style.ContainsKey("fill-rule") ? style["fill-rule"] == "nonzero" ? FillRule.Nonzero : FillRule.EvenOdd : FillRule.EvenOdd;
+                    Transform transform = element.GetTransform();
+                    path.Data = new PathGeometry((PathFigureCollection)(new PathFigureCollectionConverter()).ConvertFromString(element.Attribute("d").Value), fillRule, transform);
+                    break;
+                case "polygon":
+                    path.Data = PathGeometry.CreateFromGeometry((new Polygon()
+                    {
+                        Points = new PointCollection(element.Attribute("points").Value.Split(' ').Select(s => Point.Parse(s))),
+                    }).RenderedGeometry);
+                    break;
+                case "polyline":
+                    path.Data = PathGeometry.CreateFromGeometry((new Polyline()
+                    {
+                        Points = new PointCollection(element.Attribute("points").Value.Split(' ').Select(s => Point.Parse(s))),
+                    }).RenderedGeometry);
+                    break;
+                case "rect":
+                    path.Data = PathGeometry.CreateFromGeometry(new RectangleGeometry()
+                    {
+                        Rect = new Rect(new Point(element.GetDouble("x"), element.GetDouble("y")), new Size(element.GetDouble("width"), element.GetDouble("height"))),
+                        RadiusX = element.GetDouble("rx"),
+                        RadiusY = element.GetDouble("ry", element.GetDouble("rx")),
+                        Transform = element.GetTransform(),
+                    });
+                    break;
+                case "text":
+                    path.Data = PathGeometry.CreateFromGeometry(element.GetTextGeometry());
+                    break;
+                case "image":
+                default:
+                    isPath = false;
+                    break;
+            }
+
+            if(isPath)
+            {
+                path.ApplyStyle(style);
+                return true;
+            }
+            return false;
         }
 
         public static Transform GetTransform(this XElement element)
@@ -377,8 +382,9 @@ namespace Race
             }
             return Transform.Identity;
         }
+        #endregion
 
-
+        #region Path extensions
         public static void ApplyStyle(this Path path, Dictionary<string, string> style)
         {
             foreach (KeyValuePair<string, string> pair in style)
@@ -427,5 +433,6 @@ namespace Race
                 }
             }
         }
+        #endregion
     }
 }
