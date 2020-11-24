@@ -29,7 +29,7 @@
                 <local:ComparisonConverter x:Key="ComparisonConverter" />
             </StackPanel.Resources>
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
-            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
+            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Counterclockwise}, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
         <Label Grid.Column="0" Grid.Row="2" Content="Cars" />
         <DataGrid Grid.Column="1" Grid.Row="2" ItemsSource="{Binding ElementName=thisNGD, Path=Result.Cars, Mode=TwoWay}" AutoGenerateColumns="False">

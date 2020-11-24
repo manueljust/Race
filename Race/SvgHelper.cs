@@ -172,6 +172,11 @@ namespace Race
         #endregion
 
         #region XElement extensions
+        public static IEnumerable<XElement> ElementsByLocalName(this XElement element, string localName)
+        {
+            return element.Elements().Where(child => localName == child.Name.LocalName);
+        }
+
         public static double GetDouble(this XElement element, string name, double defaultValue = 0)
         {
             XAttribute att = element.Attribute(name);
@@ -200,7 +205,31 @@ namespace Race
 
         public static Geometry GetTextGeometry(this XElement element)
         {
+            IEnumerable<Geometry> spanGeometries = element.ElementsByLocalName("tspan").Select(child => GetTextGeometry(child));
+
             Dictionary<string, string> style = element.GetStyle();
+
+            if (0 == spanGeometries.Count())
+            {
+                return GetTextSpanGeometry(element, style);
+            }
+            else
+            {
+                Geometry baseGeometry = Geometry.Empty;
+                foreach(Geometry spanGeometry in spanGeometries)
+                {
+                    baseGeometry = new CombinedGeometry(baseGeometry, spanGeometry);
+                }
+                baseGeometry.Transform = element.GetTransform();
+                return baseGeometry;
+            }
+        }
+
+        public static Geometry GetTextSpanGeometry(this XElement element, Dictionary<string, string> baseStyle )
+        {
+            Dictionary<string, string> style = element.GetStyle(baseStyle);
+
+            double fontSize = ParseDoubleIgnoreNonDigits(style["font-size"]);
 
             FormattedText text = new FormattedText(
                 element.Value,
@@ -211,43 +240,42 @@ namespace Race
                     ParseFontStyle(style["font-style"]),
                     ParseFontWeight(style["font-weight"]),
                     FontStretches.Normal),
-                ParseDoubleIgnoreNonDigits(style["font-size"]),
+                fontSize,
                 ParseBrush(style["fill"])
                 );
 
-            Geometry geometry = text.BuildGeometry(new Point(element.GetDouble("x"), element.GetDouble("y")));
+            Geometry geometry = text.BuildGeometry(new Point(element.GetDouble("x"), element.GetDouble("y") - fontSize));
             geometry.Transform = element.GetTransform();
 
             return geometry;
-
         }
 
         public static string GetDescription(this XElement element)
         {
-            foreach(XElement child in element.Elements())
-            {
-                if(child.Name.LocalName == "desc")
-                {
-                    return child.Value;
-                }
-            }
-            return "";
+            return element.ElementsByLocalName("desc").FirstOrDefault()?.Value ?? string.Empty;
         }
 
-        public static Dictionary<string, string> GetStyle(this XElement element)
+        public static Dictionary<string, string> GetStyle(this XElement element, Dictionary<string, string> baseStyle = null)
         {
-            Dictionary<string, string> style = new Dictionary<string, string>();
-
-            XAttribute st = element.Attribute("style");
-            if(null != st)
+            Dictionary<string, string> style = baseStyle ?? new Dictionary<string, string>()
             {
-                string[] styles = st.Value.Split(';');
-                foreach(string s in styles)
+                { "font-family", "sans-serif" },
+                { "font-style", "normal" },
+                { "font-weight", "normal" },
+                { "font-size", "12" },
+                { "fill", "#000000" },
+            };
+
+            XAttribute styleElement = element.Attribute("style");
+            if(null != styleElement)
+            {
+                string[] styleStrings = styleElement.Value.Split(';');
+                foreach(string styleString in styleStrings)
                 {
-                    string[] kv = s.Split(':');
-                    if(2 == kv.Length)
+                    string[] keyValueStrings = styleString.Split(':');
+                    if(2 == keyValueStrings.Length)
                     {
-                        style[kv[0]] = kv[1];
+                        style[keyValueStrings[0]] = keyValueStrings[1];
                     }
                 }
             }
