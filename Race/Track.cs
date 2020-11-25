@@ -21,8 +21,8 @@ namespace Race
         public Path Bounds { get; set; }
         public Path[] Obstacles { get; set; } = new Path[0];
         public Path[] Decorations { get; set; } = new Path[0];
-        public Path Start { get; set; }
-        public Path Goal { get; set; }
+        public Line Start { get; set; }
+        public Line Goal { get; set; }
         public Brush Background { get; set; }
 
 

@@ -14,7 +14,18 @@ namespace Race
 {
     public class Game : PropertyChangedAware
     {
-        private readonly Random _random = new Random();
+        private static readonly Random _random = new Random();
+        private static readonly double _lineThickness = 0.8;
+
+        private Line _previewLine = new Line();
+        private Line _centerLine = new Line() { StrokeThickness = _lineThickness, Stroke = Brushes.Brown, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7 };
+        private Line _steeringLine = new Line() { StrokeThickness = _lineThickness, Stroke = Brushes.Red, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7 };
+        private PowerShape _targetPowerShape = new PowerShape() { StrokeThickness = 1, Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#330088FF")) };
+
+        private Track _track = new Track();
+        private List<Car> _cars = new List<Car>();
+        private Dictionary<Car, List<Shape>> _trails = new Dictionary<Car, List<Shape>>();
+
 
         private Canvas _canvas;
         public Canvas Canvas
@@ -30,7 +41,6 @@ namespace Race
             }
         }
 
-        private List<Car> _cars = new List<Car>() { new Car() { Color = Colors.Blue }, new Car() { Color = Colors.Brown } };
 
         private Car _activeCar;
         public Car ActiveCar
@@ -44,10 +54,6 @@ namespace Race
                 }
             }
         }
-
-        private Track Track { get; set; }
-
-        Dictionary<Car, List<Shape>> _trails = new Dictionary<Car, List<Shape>>();
 
         public Game()
         {
@@ -63,13 +69,14 @@ namespace Race
 
             try
             {
-                Track = SvgHelper.Load(filename);
+                _track = SvgHelper.Load(filename);
 
-                double i = 1;
+                double i = 0.5;
                 foreach (Car car in cars.ToDictionary(p => _random.Next()).OrderBy(p => p.Key).Select(p => p.Value))
                 {
-                    car.Position = Track.StartPoint + (i / (cars.Count() + 1)) * Track.StartLine;
-                    car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(Track.StartLine.X, Track.StartLine.Y) : -Math.Atan2(-Track.StartLine.X, -Track.StartLine.Y);
+                    car.Position = _track.Start.StartPoint() + (i / cars.Count()) * _track.Start.Vector();
+                    car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(_track.Start.Vector().X, _track.Start.Vector().Y) : -Math.Atan2(-_track.Start.Vector().X, -_track.Start.Vector().Y);
+                    car.Velocity = new Vector();
                     car.PropertyChanged += Car_PropertyChanged;
                     _trails[car] = new List<Shape>();
                     _cars.Add(car);
@@ -93,19 +100,19 @@ namespace Race
         {
             Canvas.Children.Clear();
 
-            Canvas.Height = Track.Height;
-            Canvas.Width = Track.Width;
-            Canvas.Background = Track.Background;
-            Canvas.Clip = new RectangleGeometry(new Rect(0, 0, Track.Width, Track.Height));
+            Canvas.Height = _track.Height;
+            Canvas.Width = _track.Width;
+            Canvas.Background = _track.Background;
+            Canvas.Clip = new RectangleGeometry(new Rect(0, 0, _track.Width, _track.Height));
 
-            Canvas.Children.Add(Track.Bounds);
-            Canvas.Children.Add(Track.Start);
-            Canvas.Children.Add(Track.Goal);
-            foreach (Path p in Track.Decorations)
+            Canvas.Children.Add(_track.Bounds);
+            Canvas.Children.Add(_track.Start);
+            Canvas.Children.Add(_track.Goal);
+            foreach (Path p in _track.Decorations)
             {
                 Canvas.Children.Add(p);
             }
-            foreach (Path p in Track.Obstacles)
+            foreach (Path p in _track.Obstacles)
             {
                 Canvas.Children.Add(p);
             }
@@ -134,11 +141,6 @@ namespace Race
                     break;
             }
         }
-
-        private Line _previewLine = new Line();
-        private Line _centerLine = new Line() { StrokeThickness = 0.8, Stroke = Brushes.Brown, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7 };
-        private Line _steeringLine = new Line() { StrokeThickness = 0.8, Stroke = Brushes.Red, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7 };
-        private PowerShape _targetPowerShape = new PowerShape() { StrokeThickness = 1, Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#330088FF")) };
 
         private void DrawCar(Car car)
         {
@@ -169,7 +171,7 @@ namespace Race
 
             _previewLine = new Line()
             {
-                StrokeThickness = 1.2,
+                StrokeThickness = _lineThickness,
                 Stroke = new SolidColorBrush(ActiveCar.Color),
                 X1 = ActiveCar.Position.X,
                 Y1 = ActiveCar.Position.Y,
@@ -198,30 +200,47 @@ namespace Race
             _trails[ActiveCar].Add(_previewLine);
         }
 
-        private int _winCount = 0;
+//        private int _winCount = 0;
         private bool IsWin()
         {
-            IntersectionDetail win = Track.Goal.RenderedGeometry.FillContainsWithDetail(_previewLine.RenderedGeometry);
+            return Intersect(_previewLine, _track.Goal);
+            //    if (Intersect(_previewLine, _track.Goal))
+            //    {
+            //        _winCount++;
+            //    return _winCount > _cars.Count;
+            //}
 
-            if (IntersectionDetail.Empty != win)
-            {
-                _winCount++;
-                return _winCount > _cars.Count;
-            }
+            //return false;
+        }
 
-            return false;
+        private bool Intersect(Line line1, Line line2)
+        {
+            // https://stackoverflow.com/questions/385305/efficient-maths-algorithm-to-calculate-intersections
+
+            double a1 = (line1.Y2 - line1.Y1) / (line1.X2 - line1.Y2);
+            double b1 = line1.Y1 - a1 * line1.X1; 
+
+            double a2 = (line2.Y2 - line2.Y1) / (line2.X2 - line2.Y2);
+            double b2 = line2.Y1 - a2 * line2.X1;
+
+            int s1 = Math.Sign(line2.Y1 - a1 * line2.X1 - b1);
+            int s2 = Math.Sign(line2.Y2 - a1 * line2.X2 - b1);
+            int s3 = Math.Sign(line1.Y1 - a2 * line1.X1 - b2);
+            int s4 = Math.Sign(line1.Y2 - a2 * line1.X2 - b2);
+
+            return (s1 != s2) && (s3 != s4);
         }
 
         private bool IsCrash()
         {
-            IntersectionDetail onTrack = Track.Bounds.RenderedGeometry.FillContainsWithDetail(_previewLine.RenderedGeometry);
+            IntersectionDetail onTrack = _track.Bounds.RenderedGeometry.FillContainsWithDetail(_previewLine.RenderedGeometry);
 
             if (onTrack != IntersectionDetail.FullyContains)
             {
                 return true;
             }
 
-            foreach (Path p in Track.Obstacles)
+            foreach (Path p in _track.Obstacles)
             {
                 IntersectionDetail collision = p.RenderedGeometry.FillContainsWithDetail(_previewLine.RenderedGeometry);
 

@@ -27,7 +27,7 @@
                 <TextBox Width="40" Text="{Binding ElementName=thisMW, Path=Game.ActiveCar.TargetAngle, StringFormat='{}{0:0.000}', UpdateSourceTrigger=PropertyChanged}" />
                 <Button Width="40" Content="Move" Click="Move_Click" />
             </StackPanel>
-            <TextBlock Text="{Binding ElementName=thisMW, Path=Game.Car.StatusText}" />
+            <TextBlock Text="{Binding ElementName=thisMW, Path=Game.ActiveCar.StatusText}" />
         </StackPanel>
         <Viewbox Stretch="Uniform" >
             <ContentPresenter Content="{Binding ElementName=thisMW, Path=Game.Canvas}" />

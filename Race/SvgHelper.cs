@@ -40,29 +40,41 @@ namespace Race
             List<Path> obstacles = new List<Path>();
             foreach (XElement element in xdoc.Descendants())
             {
-                if (element.TryGetPath(out Path path))
-                {
                     switch (element.GetDescription().ToLower())
                     {
                         case "bounds":
-                            track.Bounds = path;
+                            if (element.TryGetPath(out Path boundsPath))
+                            {
+                                track.Bounds = boundsPath;
+                            }
                             break;
                         case "start":
-                            track.Start = path;
-                            track.StartPoint = path.Data.Bounds.Location;
-                            track.StartLine = new Vector(path.Data.Bounds.Width, path.Data.Bounds.Height);
+                            if (element.TryGetLine(out Line startLine))
+                            {
+                                track.Start = startLine;
+                                track.StartPoint = new Point(startLine.X1, startLine.X2);
+                                track.StartLine = new Vector(startLine.X2 - startLine.X1, startLine.Y2 - startLine.Y2);
+                            }
                             break;
                         case "goal":
-                            track.Goal = path;
+                            if (element.TryGetLine(out Line goalLine))
+                            {
+                                track.Goal = goalLine;
+                            }
                             break;
                         case "obstacle":
-                            obstacles.Add(path);
+                            if (element.TryGetPath(out Path obastclePath))
+                            {
+                                obstacles.Add(obastclePath);
+                            }
                             break;
                         default:
-                            decorations.Add(path);
+                            if (element.TryGetPath(out Path decorationPath))
+                            {
+                                decorations.Add(decorationPath);
+                            }
                             break;
                     }
-                }
             }
             track.Obstacles = obstacles.ToArray();
             track.Decorations = decorations.ToArray();
@@ -70,7 +82,7 @@ namespace Race
             if (null == track.Goal)
             {
                 // encoding and parsing seems to be the most straightforward method to deep copy
-                track.Goal = (Path)System.Windows.Markup.XamlReader.Parse(System.Windows.Markup.XamlWriter.Save(track.Start));
+                track.Goal = (Line)System.Windows.Markup.XamlReader.Parse(System.Windows.Markup.XamlWriter.Save(track.Start));
                 track.Goal.Opacity = 0;
             }
             if (null == track.Bounds)
@@ -358,9 +370,58 @@ namespace Race
                     break;
             }
 
-            if(isPath)
+            if (isPath)
             {
                 path.ApplyStyle(style);
+                return true;
+            }
+            return false;
+        }
+
+        public static bool TryGetLine(this XElement element, out Line line)
+        {
+            line = new Line()
+            {
+                Fill = element.GetBrush("fill"),
+                Stroke = element.GetBrush("stroke"),
+            };
+
+            bool isPath = true;
+
+            Dictionary<string, string> style = element.GetStyle();
+
+            try
+            {
+                switch (element.Name.LocalName.ToLower())
+                {
+                    case "line":
+                        line.X1 = element.GetDouble("x1");
+                        line.Y1 = element.GetDouble("y1");
+                        line.X2 = element.GetDouble("x2");
+                        line.Y2 = element.GetDouble("y2");
+                        break;
+                    case "path":
+                        FillRule fillRule = FillRule.EvenOdd;
+                        Transform transform = element.GetTransform();
+                        PathGeometry pg = new PathGeometry((PathFigureCollection)(new PathFigureCollectionConverter()).ConvertFromString(element.Attribute("d").Value), fillRule, transform);
+                        line.X1 = pg.Figures.First().StartPoint.X;
+                        line.Y1 = pg.Figures.First().StartPoint.Y;
+                        line.X2 = pg.Figures.First().EndPoint().X;
+                        line.Y2 = pg.Figures.First().EndPoint().Y;
+                        break;
+                    default:
+                        isPath = false;
+                        break;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (isPath)
+            {
+                line.ApplyStyle(style);
                 return true;
             }
             return false;
@@ -412,54 +473,104 @@ namespace Race
         }
         #endregion
 
-        #region Path extensions
-        public static void ApplyStyle(this Path path, Dictionary<string, string> style)
+        #region Shape extensions
+        public static void ApplyStyle(this Shape shape, Dictionary<string, string> style)
         {
             foreach (KeyValuePair<string, string> pair in style)
             {
                 switch (pair.Key.ToLower())
                 {
                     case "fill":
-                        path.Fill = ParseBrush(pair.Value);
+                        shape.Fill = ParseBrush(pair.Value);
                         break;
                     case "stroke":
-                        path.Stroke = ParseBrush(pair.Value);
+                        shape.Stroke = ParseBrush(pair.Value);
                         break;
                     case "stroke-width":
-                        path.StrokeThickness = ParseDoubleIgnoreNonDigits(pair.Value);
+                        shape.StrokeThickness = ParseDoubleIgnoreNonDigits(pair.Value);
                         break;
                     case "stroke-linecap":
-                        path.StrokeStartLineCap = ParseLineCap(pair.Value);
-                        path.StrokeEndLineCap = ParseLineCap(pair.Value);
+                        shape.StrokeStartLineCap = ParseLineCap(pair.Value);
+                        shape.StrokeEndLineCap = ParseLineCap(pair.Value);
                         break;
                     case "stroke-linejoin":
-                        path.StrokeLineJoin = ParseLineJoin(pair.Value);
+                        shape.StrokeLineJoin = ParseLineJoin(pair.Value);
                         break;
                     case "stroke-miterlimit":
-                        path.StrokeMiterLimit = ParseDoubleIgnoreNonDigits(pair.Value);
+                        shape.StrokeMiterLimit = ParseDoubleIgnoreNonDigits(pair.Value);
                         break;
                     case "stroke-dasharray":
-                        path.StrokeDashArray = ParseDashArray(pair.Value);
+                        shape.StrokeDashArray = ParseDashArray(pair.Value);
                         break;
                     case "stroke-dashoffset":
-                        path.StrokeDashOffset = ParseDoubleIgnoreNonDigits(pair.Value);
+                        shape.StrokeDashOffset = ParseDoubleIgnoreNonDigits(pair.Value);
                         break;
                     case "visibility":
                         switch (pair.Value)
                         {
                             case "hidden":
-                                path.Visibility = Visibility.Hidden;
+                                shape.Visibility = Visibility.Hidden;
                                 break;
                             case "collapsed":
-                                path.Visibility = Visibility.Collapsed;
+                                shape.Visibility = Visibility.Collapsed;
                                 break;
                         }
                         break;
                     case "opacity":
-                        path.Opacity = double.Parse(pair.Value);
+                        shape.Opacity = double.Parse(pair.Value);
                         break;
                 }
             }
+        }
+        #endregion
+
+        #region Line extensions
+        public static Point StartPoint(this Line line)
+        {
+            //        d="m 139.57621,16.301715 2.29859,15.021964"
+
+            return new Point(line.X1 + line.GeometryTransform.Value.OffsetX, line.Y1 + line.GeometryTransform.Value.OffsetY);
+        }
+
+        public static Vector Vector(this Line line)
+        {
+            return new Vector(line.X2 - line.X1, line.Y2 - line.Y1);
+        }
+        #endregion
+
+        #region PathFigure extensions
+        public static Point EndPoint(this PathFigure pathFigure)
+        {
+            PathSegment last = pathFigure.Segments.Last();
+            if (last is ArcSegment)
+            {
+                return ((ArcSegment)last).Point;
+            }
+            if (last is BezierSegment)
+            {
+                return ((BezierSegment)last).Point3;
+            }
+            if (last is LineSegment)
+            {
+                return ((LineSegment)last).Point;
+            }
+            if (last is PolyBezierSegment)
+            {
+                return ((PolyBezierSegment)last).Points.Last();
+            }
+            if (last is PolyLineSegment)
+            {
+                return ((PolyLineSegment)last).Points.Last();
+            }
+            if (last is PolyQuadraticBezierSegment)
+            {
+                return ((PolyQuadraticBezierSegment)last).Points.Last();
+            }
+            if (last is QuadraticBezierSegment)
+            {
+                return ((QuadraticBezierSegment)last).Point2;
+            }
+            return new Point();
         }
         #endregion
     }
