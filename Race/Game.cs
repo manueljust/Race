@@ -66,6 +66,7 @@ namespace Race
         {
             Canvas.Children.Clear();
             _cars.Clear();
+            _trails.Clear();
 
             try
             {
@@ -202,25 +203,7 @@ namespace Race
 
         private bool IsWin()
         {
-            return Intersect(_previewLine, _track.Goal);
-        }
-
-        private bool Intersect(Line line1, Line line2)
-        {
-            // https://stackoverflow.com/questions/385305/efficient-maths-algorithm-to-calculate-intersections
-
-            double a1 = (line1.Y2 - line1.Y1) / (line1.X2 - line1.Y2);
-            double b1 = line1.Y1 - a1 * line1.X1; 
-
-            double a2 = (line2.Y2 - line2.Y1) / (line2.X2 - line2.Y2);
-            double b2 = line2.Y1 - a2 * line2.X1;
-
-            int s1 = Math.Sign(line2.Y1 - a1 * line2.X1 - b1);
-            int s2 = Math.Sign(line2.Y2 - a1 * line2.X2 - b1);
-            int s3 = Math.Sign(line1.Y1 - a2 * line1.X1 - b2);
-            int s4 = Math.Sign(line1.Y2 - a2 * line1.X2 - b2);
-
-            return (s1 != s2) && (s3 != s4);
+            return 2 < _trails[ActiveCar].Count && _track.Goal.CollidesWith(_previewLine);
         }
 
         private bool IsCrash()
@@ -234,11 +217,7 @@ namespace Race
 
             foreach (Shape s in _track.Obstacles)
             {
-                s.Measure(Canvas.RenderSize);
-                s.Arrange(Canvas.Clip.Bounds);
-                IntersectionDetail collision = Geometry.Combine(Geometry.Empty, s.RenderedGeometry, GeometryCombineMode.Union, s.RenderTransform).FillContainsWithDetail(_previewLine.RenderedGeometry);
-
-                if (collision != IntersectionDetail.Empty)
+                if(s.CollidesWith(_previewLine))
                 {
                     return true;
                 }

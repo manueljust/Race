@@ -93,6 +93,26 @@ namespace Race
             return track;
         }
 
+        private static bool Intersect(Line line1, Line line2)
+        {
+            // https://stackoverflow.com/questions/385305/efficient-maths-algorithm-to-calculate-intersections
+
+            double dx1 = line1.X2 - line1.X1;
+            double a1 = (line1.Y2 - line1.Y1) / (0.0 == dx1 ? 1e-15 : dx1);
+            double b1 = line1.Y1 - a1 * line1.X1;
+
+            double dx2 = line2.X2 - line2.X1;
+            double a2 = (line2.Y2 - line2.Y1) / (0.0 == dx2 ? 1e-15 : dx2);
+            double b2 = line2.Y1 - a2 * line2.X1;
+
+            int s1 = Math.Sign(line2.Y1 - a1 * line2.X1 - b1);
+            int s2 = Math.Sign(line2.Y2 - a1 * line2.X2 - b1);
+            int s3 = Math.Sign(line1.Y1 - a2 * line1.X1 - b2);
+            int s4 = Math.Sign(line1.Y2 - a2 * line1.X2 - b2);
+
+            return (s1 != s2) && (s3 != s4);
+        }
+
         #region parse helpers
         public static Brush ParseBrush(string s)
         {
@@ -682,6 +702,40 @@ namespace Race
                         break;
                 }
             }
+        }
+
+        public static bool CollidesWith(this Shape shape, Line line)
+        {
+            Geometry transformedGeometry = Geometry.Combine(Geometry.Empty, shape.RenderedGeometry, GeometryCombineMode.Union, shape.RenderTransform);
+            if (0 != transformedGeometry.GetArea())
+            {
+                IntersectionDetail collision = transformedGeometry.FillContainsWithDetail(line.RenderedGeometry);
+
+                if (collision != IntersectionDetail.Empty)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                //        d="m 139.57621,16.301715 2.29859,15.021964"
+                PathFigure pf = PathGeometry.CreateFromGeometry(shape.RenderedGeometry).Figures.FirstOrDefault();
+                if (null != pf)
+                {
+                    Line lineRepresentation = new Line()
+                    {
+                        X1 = pf.StartPoint.X + shape.RenderTransform.Value.OffsetX,
+                        Y1 = pf.StartPoint.Y + shape.RenderTransform.Value.OffsetY,
+                        X2 = pf.EndPoint().X + shape.RenderTransform.Value.OffsetX,
+                        Y2 = pf.EndPoint().Y + shape.RenderTransform.Value.OffsetY,
+                    };
+                    if (Intersect(line, lineRepresentation))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
         #endregion
 
