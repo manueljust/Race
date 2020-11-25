@@ -108,13 +108,13 @@ namespace Race
             Canvas.Children.Add(_track.Bounds);
             Canvas.Children.Add(_track.Start);
             Canvas.Children.Add(_track.Goal);
-            foreach (Path p in _track.Decorations)
+            foreach (Shape s in _track.Decorations)
             {
-                Canvas.Children.Add(p);
+                Canvas.Children.Add(s);
             }
-            foreach (Path p in _track.Obstacles)
+            foreach (Shape s in _track.Obstacles)
             {
-                Canvas.Children.Add(p);
+                Canvas.Children.Add(s);
             }
 
             Canvas.Children.Add(_targetPowerShape);
@@ -232,9 +232,11 @@ namespace Race
                 return true;
             }
 
-            foreach (Path p in _track.Obstacles)
+            foreach (Shape s in _track.Obstacles)
             {
-                IntersectionDetail collision = p.RenderedGeometry.FillContainsWithDetail(_previewLine.RenderedGeometry);
+                s.Measure(Canvas.RenderSize);
+                s.Arrange(Canvas.Clip.Bounds);
+                IntersectionDetail collision = Geometry.Combine(Geometry.Empty, s.RenderedGeometry, GeometryCombineMode.Union, s.RenderTransform).FillContainsWithDetail(_previewLine.RenderedGeometry);
 
                 if (collision != IntersectionDetail.Empty)
                 {
@@ -254,7 +256,7 @@ namespace Race
             double penalty = 1;
             if (IsCrash())
             {
-                _previewLine.Stroke = Brushes.Red;
+                //_previewLine.Stroke = Brushes.Red;
                 _previewLine.StrokeDashArray = new DoubleCollection(new double[] { 1.2, 0.8 });
                 penalty = 0.5;
             }

@@ -7,3 +7,4 @@ Work in progress.
 * rework crash penalty
 * svg implement non-solidcolor brushes
 * svg make use of wpf default shapes
+* svg implement \<image /\> tag

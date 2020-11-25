@@ -34,8 +34,8 @@ namespace Race
                 // ignore errors, keep default width and height
             }
 
-            List<Path> decorations = new List<Path>();
-            List<Path> obstacles = new List<Path>();
+            List<Shape> decorations = new List<Shape>();
+            List<Shape> obstacles = new List<Shape>();
             foreach (XElement element in xdoc.Descendants())
             {
                     switch (element.GetDescription().ToLower())
@@ -59,15 +59,15 @@ namespace Race
                             }
                             break;
                         case "obstacle":
-                            if (element.TryGetPath(out Path obastclePath))
+                            if (element.TryGetShape(out Shape obastcleShape))
                             {
-                                obstacles.Add(obastclePath);
+                                obstacles.Add(obastcleShape);
                             }
                             break;
                         default:
-                            if (element.TryGetPath(out Path decorationPath))
+                            if (element.TryGetShape(out Shape decorationShape))
                             {
-                                decorations.Add(decorationPath);
+                                decorations.Add(decorationShape);
                             }
                             break;
                     }
@@ -167,6 +167,10 @@ namespace Race
 
         public static double ParseDoubleIgnoreNonDigits(string s)
         {
+            if(null == s)
+            {
+                return 0.0;
+            }
             try
             {
                 return double.Parse(string.Join("", s.Where(c => char.IsDigit(c) || '.' == c)));
@@ -291,103 +295,143 @@ namespace Race
             return style;
         }
 
-        public static bool TryGetPath(this XElement element, out Path path)
+        public static bool TryGetShape(this XElement element, out Shape shape)
         {
-            path = new Path()
-            {
-                Fill = element.GetBrush("fill"),
-                Stroke = element.GetBrush("stroke"),
-            };
-
-            bool isPath = true;
-
-            Dictionary<string, string> style = element.GetStyle();
-
             switch (element.Name.LocalName.ToLower())
             {
                 case "circle":
-                    path.Data = PathGeometry.CreateFromGeometry(new EllipseGeometry()
+                    if(element.TryGetCircle(out Ellipse circle))
                     {
-                        Center = new Point(element.GetDouble("cx"), element.GetDouble("cy")),
-                        RadiusX = element.GetDouble("r"),
-                        RadiusY = element.GetDouble("r"),
-                        Transform = element.GetTransform(),
-                    });
+                        shape = circle;
+                        return true;
+                    }
                     break;
                 case "ellipse":
-                    path.Data = PathGeometry.CreateFromGeometry(new EllipseGeometry()
+                    if(element.TryGetEllipse(out Ellipse ellipse))
                     {
-                        Center = new Point(element.GetDouble("cx"), element.GetDouble("cy")),
-                        RadiusX = element.GetDouble("rx"),
-                        RadiusY = element.GetDouble("ry"),
-                        Transform = element.GetTransform(),
-                    });
+                        shape = ellipse;
+                        return true;
+                    }
                     break;
                 case "line":
-                    path.Data = PathGeometry.CreateFromGeometry(new LineGeometry()
+                    if(element.TryGetLine(out Line line))
                     {
-                        StartPoint = new Point(element.GetDouble("x1"), element.GetDouble("y1")),
-                        EndPoint = new Point(element.GetDouble("x2"), element.GetDouble("y2")),
-                        Transform = element.GetTransform(),
-                    });
+                        shape = line;
+                        return true;
+                    }
                     break;
                 case "path":
-                    FillRule fillRule = style.ContainsKey("fill-rule") ? style["fill-rule"] == "nonzero" ? FillRule.Nonzero : FillRule.EvenOdd : FillRule.EvenOdd;
-                    Transform transform = element.GetTransform();
-                    path.Data = new PathGeometry((PathFigureCollection)(new PathFigureCollectionConverter()).ConvertFromString(element.Attribute("d").Value), fillRule, transform);
+                    if (element.TryGetPath(out Path path))
+                    {
+                        shape = path;
+                        return true;
+                    }
                     break;
                 case "polygon":
-                    path.Data = PathGeometry.CreateFromGeometry((new Polygon()
+                    if (element.TryGetPolygon(out Polygon polygon))
                     {
-                        Points = new PointCollection(element.Attribute("points").Value.Split(' ').Select(s => Point.Parse(s))),
-                    }).RenderedGeometry);
+                        shape = polygon;
+                        return true;
+                    }
                     break;
                 case "polyline":
-                    path.Data = PathGeometry.CreateFromGeometry((new Polyline()
+                    if (element.TryGetPolyline(out Polyline polyline))
                     {
-                        Points = new PointCollection(element.Attribute("points").Value.Split(' ').Select(s => Point.Parse(s))),
-                    }).RenderedGeometry);
+                        shape = polyline;
+                        return true;
+                    }
                     break;
                 case "rect":
-                    path.Data = PathGeometry.CreateFromGeometry(new RectangleGeometry()
+                    if (element.TryGetRectangle(out Rectangle rectangle))
                     {
-                        Rect = new Rect(new Point(element.GetDouble("x"), element.GetDouble("y")), new Size(element.GetDouble("width"), element.GetDouble("height"))),
-                        RadiusX = element.GetDouble("rx"),
-                        RadiusY = element.GetDouble("ry", element.GetDouble("rx")),
-                        Transform = element.GetTransform(),
-                    });
+                        shape = rectangle;
+                        return true;
+                    }
                     break;
                 case "text":
-                    path.Data = PathGeometry.CreateFromGeometry(element.GetTextGeometry());
+                    if (element.TryGetText(out Path text))
+                    {
+                        shape = text;
+                        return true;
+                    }
                     break;
                 case "image":
-                default:
-                    isPath = false;
-                    break;
+                    shape = null;
+                    return false;
             }
+            shape = null;
+            return false;
+        }
 
-            if (isPath)
+        public static bool TryGetCircle(this XElement element, out Ellipse ellipse)
+        {
+            try
             {
-                path.ApplyStyle(style);
+                double x = ParseDoubleIgnoreNonDigits(element.Attribute("cx")?.Value);
+                double y = ParseDoubleIgnoreNonDigits(element.Attribute("cy")?.Value);
+                double r = ParseDoubleIgnoreNonDigits(element.Attribute("r")?.Value);
+
+                ellipse = new Ellipse()
+                {
+                    Fill = element.GetBrush("fill"),
+                    Stroke = element.GetBrush("stroke"),
+                    Height = 2 * r,
+                    Width = 2 * r,
+                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
+                };
+
+                ellipse.ApplyStyle(element.GetStyle());
+
                 return true;
+            }
+            catch
+            {
+                ellipse = null;
+            }
+            return false;
+        }
+
+        public static bool TryGetEllipse(this XElement element, out Ellipse ellipse)
+        {
+            try
+            {
+                double x = ParseDoubleIgnoreNonDigits(element.Attribute("cx")?.Value);
+                double y = ParseDoubleIgnoreNonDigits(element.Attribute("cy")?.Value);
+                double rx = ParseDoubleIgnoreNonDigits(element.Attribute("rx")?.Value);
+                double ry = ParseDoubleIgnoreNonDigits(element.Attribute("ry")?.Value);
+
+                ellipse = new Ellipse()
+                {
+                    Fill = element.GetBrush("fill"),
+                    Stroke = element.GetBrush("stroke"),
+                    Height = 2 * rx,
+                    Width = 2 * ry,
+                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
+                };
+
+                ellipse.ApplyStyle(element.GetStyle());
+
+                return true;
+            }
+            catch
+            {
+                ellipse = null;
             }
             return false;
         }
 
         public static bool TryGetLine(this XElement element, out Line line)
         {
-            line = new Line()
-            {
-                Fill = element.GetBrush("fill"),
-                Stroke = element.GetBrush("stroke"),
-            };
-
-            bool isPath = true;
-
             Dictionary<string, string> style = element.GetStyle();
 
             try
             {
+                line = new Line()
+                {
+                    Fill = element.GetBrush("fill"),
+                    Stroke = element.GetBrush("stroke"),
+                };
+
                 switch (element.Name.LocalName.ToLower())
                 {
                     case "line":
@@ -395,7 +439,9 @@ namespace Race
                         line.Y1 = element.GetDouble("y1");
                         line.X2 = element.GetDouble("x2");
                         line.Y2 = element.GetDouble("y2");
-                        break;
+                        line.RenderTransform = element.GetTransform();
+                        line.ApplyStyle(style);
+                        return true;
                     case "path":
                         FillRule fillRule = FillRule.EvenOdd;
                         Transform transform = element.GetTransform();
@@ -404,23 +450,142 @@ namespace Race
                         line.Y1 = pg.Figures.First().StartPoint.Y;
                         line.X2 = pg.Figures.First().EndPoint().X;
                         line.Y2 = pg.Figures.First().EndPoint().Y;
-                        break;
+                        line.ApplyStyle(style);
+                        return true;
                     default:
-                        isPath = false;
-                        break;
+                        line = null;
+                        return false;
                 }
             }
             catch
             {
+                line = null;
                 return false;
             }
+        }
 
-            if (isPath)
+        public static bool TryGetPath(this XElement element, out Path path)
+        {
+            try
             {
-                line.ApplyStyle(style);
+                path = new Path()
+                {
+                    Fill = element.GetBrush("fill"),
+                    Stroke = element.GetBrush("stroke"),
+                };
+
+                Dictionary<string, string> style = element.GetStyle();
+                FillRule fillRule = style.ContainsKey("fill-rule") ? style["fill-rule"] == "nonzero" ? FillRule.Nonzero : FillRule.EvenOdd : FillRule.EvenOdd;
+                Transform transform = element.GetTransform();
+                path.Data = new PathGeometry((PathFigureCollection)(new PathFigureCollectionConverter()).ConvertFromString(element.Attribute("d").Value), fillRule, transform);
+
+                path.ApplyStyle(style);
                 return true;
             }
-            return false;
+            catch
+            {
+                path = null;
+                return false;
+            }
+        }
+
+        public static bool TryGetPolygon(this XElement element, out Polygon polygon)
+        {
+            try
+            {
+                polygon = new Polygon()
+                {
+                    Fill = element.GetBrush("fill"),
+                    Stroke = element.GetBrush("stroke"),
+                    Points = new PointCollection(element.Attribute("points").Value.Split(' ').Select(s => Point.Parse(s))),
+                    RenderTransform = element.GetTransform(),
+                };
+
+                polygon.ApplyStyle(element.GetStyle());
+                return true;
+            }
+            catch
+            {
+                polygon = null;
+                return false;
+            }
+        }
+
+        public static bool TryGetPolyline(this XElement element, out Polyline polyline)
+        {
+            try
+            {
+                polyline = new Polyline()
+                {
+                    Fill = element.GetBrush("fill"),
+                    Stroke = element.GetBrush("stroke"),
+                    Points = new PointCollection(element.Attribute("points").Value.Split(' ').Select(s => Point.Parse(s))),
+                    RenderTransform = element.GetTransform(),
+                };
+
+                polyline.ApplyStyle(element.GetStyle());
+                return true;
+            }
+            catch
+            {
+                polyline = null;
+                return false;
+            }
+        }
+
+        public static bool TryGetRectangle(this XElement element, out Rectangle rectangle)
+        {
+            try
+            {
+                double x = ParseDoubleIgnoreNonDigits(element.Attribute("x")?.Value);
+                double y = ParseDoubleIgnoreNonDigits(element.Attribute("y")?.Value);
+                double w = ParseDoubleIgnoreNonDigits(element.Attribute("width")?.Value);
+                double h = ParseDoubleIgnoreNonDigits(element.Attribute("height")?.Value);
+                double rx = ParseDoubleIgnoreNonDigits(element.Attribute("rx")?.Value);
+                double ry = ParseDoubleIgnoreNonDigits(element.Attribute("ry")?.Value);
+
+                rectangle = new Rectangle()
+                {
+                    Fill = element.GetBrush("fill"),
+                    Stroke = element.GetBrush("stroke"),
+                    Width = w,
+                    Height = h,
+                    RadiusX = 0.0 == rx ? ry : rx,
+                    RadiusY = 0.0 == ry ? rx : ry,
+                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
+                };
+
+                rectangle.ApplyStyle(element.GetStyle());
+                return true;
+            }
+            catch
+            {
+                rectangle = null;
+                return false;
+            }
+        }
+
+        public static bool TryGetText(this XElement element, out Path text)
+        {
+            try
+            {
+                double x = ParseDoubleIgnoreNonDigits(element.Attribute("x")?.Value);
+                double y = ParseDoubleIgnoreNonDigits(element.Attribute("y")?.Value);
+
+                text = new Path()
+                {
+                    Data = PathGeometry.CreateFromGeometry(element.GetTextGeometry()),
+                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
+                };
+
+                text.ApplyStyle(element.GetStyle());
+                return true;
+            }
+            catch
+            {
+                text = null;
+                return false;
+            }
         }
 
         public static Transform GetTransform(this XElement element)
