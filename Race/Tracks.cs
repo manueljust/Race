@@ -27,8 +27,6 @@ namespace Race
                 default:
                     return new Track()
                     {
-                        StartPoint = new Point(45, 95),
-                        StartAngle = -0.3,
                         Width = 210,
                         Height = 150,
                         Bounds = new Path()
@@ -104,8 +102,6 @@ namespace Race
                 case 1:
                     return new Track()
                     {
-                        StartPoint = new Point(65, 40),
-                        StartAngle = 0.22,
                         Width = 210,
                         Height = 150,
                         Bounds = new Path()

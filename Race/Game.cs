@@ -200,17 +200,9 @@ namespace Race
             _trails[ActiveCar].Add(_previewLine);
         }
 
-//        private int _winCount = 0;
         private bool IsWin()
         {
             return Intersect(_previewLine, _track.Goal);
-            //    if (Intersect(_previewLine, _track.Goal))
-            //    {
-            //        _winCount++;
-            //    return _winCount > _cars.Count;
-            //}
-
-            //return false;
         }
 
         private bool Intersect(Line line1, Line line2)

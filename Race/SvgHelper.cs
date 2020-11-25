@@ -16,8 +16,6 @@ namespace Race
         {
             Track track = new Track()
             {
-                StartPoint = new Point(65, 40),
-                StartAngle = 0.22,
                 Width = 210,
                 Height = 150,
                 Background = Brushes.ForestGreen,
@@ -52,8 +50,6 @@ namespace Race
                             if (element.TryGetLine(out Line startLine))
                             {
                                 track.Start = startLine;
-                                track.StartPoint = new Point(startLine.X1, startLine.X2);
-                                track.StartLine = new Vector(startLine.X2 - startLine.X1, startLine.Y2 - startLine.Y2);
                             }
                             break;
                         case "goal":
@@ -527,9 +523,7 @@ namespace Race
         #region Line extensions
         public static Point StartPoint(this Line line)
         {
-            //        d="m 139.57621,16.301715 2.29859,15.021964"
-
-            return new Point(line.X1 + line.GeometryTransform.Value.OffsetX, line.Y1 + line.GeometryTransform.Value.OffsetY);
+            return new Point(line.X1, line.Y1);
         }
 
         public static Vector Vector(this Line line)
