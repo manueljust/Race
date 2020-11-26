@@ -397,7 +397,7 @@ namespace Race
                     Stroke = element.GetBrush("stroke"),
                     Height = 2 * r,
                     Width = 2 * r,
-                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
+                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x - r, y - r) }) },
                 };
 
                 ellipse.ApplyStyle(element.GetStyle());
@@ -426,7 +426,7 @@ namespace Race
                     Stroke = element.GetBrush("stroke"),
                     Height = 2 * rx,
                     Width = 2 * ry,
-                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
+                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x - rx, y - ry) }) },
                 };
 
                 ellipse.ApplyStyle(element.GetStyle());
@@ -595,7 +595,6 @@ namespace Race
                 text = new Path()
                 {
                     Data = PathGeometry.CreateFromGeometry(element.GetTextGeometry()),
-                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
                 };
 
                 text.ApplyStyle(element.GetStyle());
@@ -706,6 +705,11 @@ namespace Race
 
         public static bool CollidesWith(this Shape shape, Line line)
         {
+            if (shape is Line line2)
+            {
+                return Intersect(line, line2);
+            }
+
             Geometry transformedGeometry = Geometry.Combine(Geometry.Empty, shape.RenderedGeometry, GeometryCombineMode.Union, shape.RenderTransform);
             if (0 != transformedGeometry.GetArea())
             {
@@ -718,16 +722,15 @@ namespace Race
             }
             else
             {
-                //        d="m 139.57621,16.301715 2.29859,15.021964"
-                PathFigure pf = PathGeometry.CreateFromGeometry(shape.RenderedGeometry).Figures.FirstOrDefault();
+                PathFigure pf = PathGeometry.CreateFromGeometry(transformedGeometry).Figures.FirstOrDefault();
                 if (null != pf)
                 {
                     Line lineRepresentation = new Line()
                     {
-                        X1 = pf.StartPoint.X + shape.RenderTransform.Value.OffsetX,
-                        Y1 = pf.StartPoint.Y + shape.RenderTransform.Value.OffsetY,
-                        X2 = pf.EndPoint().X + shape.RenderTransform.Value.OffsetX,
-                        Y2 = pf.EndPoint().Y + shape.RenderTransform.Value.OffsetY,
+                        X1 = pf.StartPoint.X,
+                        Y1 = pf.StartPoint.Y,
+                        X2 = pf.EndPoint().X,
+                        Y2 = pf.EndPoint().Y,
                     };
                     if (Intersect(line, lineRepresentation))
                     {
