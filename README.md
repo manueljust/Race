@@ -5,6 +5,6 @@ Work in progress.
 ### ToDo's
 * rework win condition
 * rework crash penalty
+  - velocity stop at crash point and permanent speed penalty
 * svg implement non-solidcolor brushes
-* svg make use of wpf default shapes
 * svg implement \<image /\> tag
