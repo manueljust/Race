@@ -34,9 +34,11 @@ namespace Race
                 // ignore errors, keep default width and height
             }
 
+            Dictionary<string, object> defs = xdoc.Root.GetDefinitions();
+
             List<Shape> decorations = new List<Shape>();
             List<Shape> obstacles = new List<Shape>();
-            foreach (XElement element in xdoc.Descendants())
+            foreach (XElement element in xdoc.Descendants().Where(d => "g" == d.Name.LocalName).SelectMany(g => g.Descendants()))
             {
                     switch (element.GetDescription().ToLower())
                     {
@@ -75,6 +77,10 @@ namespace Race
             track.Obstacles = obstacles.ToArray();
             track.Decorations = decorations.ToArray();
 
+            if (null == track.Start)
+            {
+                throw new InvalidOperationException("No element with description \"start\" found.");
+            }
             if (null == track.Goal)
             {
                 // encoding and parsing seems to be the most straightforward method to deep copy
@@ -84,10 +90,6 @@ namespace Race
             if (null == track.Bounds)
             {
                 throw new InvalidOperationException("No element with description \"bounds\" found.");
-            }
-            if (null == track.Start)
-            {
-                throw new InvalidOperationException("No element with description \"start\" found.");
             }
 
             return track;
@@ -607,42 +609,82 @@ namespace Race
             }
         }
 
-        public static Transform GetTransform(this XElement element)
+        public static bool TryGetGradientStop(this XElement element, out GradientStop gradientStop)
         {
-            string transform = element.Attribute("transform")?.Value;
+            try
+            {
+                Dictionary<string, string> style = element.GetStyle();
+
+                Color c = (Color)ColorConverter.ConvertFromString(style.TryGetValue("stop-color", out string color) ? color : "black");
+                c.A = 0xff == c.A ? style.TryGetValue("stop-opacity", out string opacity) ? (byte)(double.Parse(opacity) * 0xff) : c.A : c.A;
+
+                gradientStop = new GradientStop()
+                {
+                    Color = c,
+                    Offset = ParseDoubleIgnoreNonDigits(element.Attribute("offset")?.Value),
+                };
+            }
+            catch
+            {
+                gradientStop = null;
+            }
+            return false;
+        }
+
+        public static bool TryGetLinearGradientBrush(this XElement element, out LinearGradientBrush brush)
+        {
+            try
+            {
+                brush = new LinearGradientBrush()
+                {
+                    GradientStops = new GradientStopCollection(element.Elements().Where(c => "stop" == c.Name.LocalName && c.TryGetGradientStop(out GradientStop _)).Select(g => ()),
+                    Transform = element.GetTransform("gradientTransorm"),
+                };
+                
+            }
+            catch
+            {
+                brush = null;
+            }
+            return false;
+        }
+
+        public static Transform GetTransform(this XElement element, string attributeName = "transform")
+        {
+            string transform = element.Attribute(attributeName)?.Value;
             if (null == transform) return Transform.Identity;
 
             try
             {
-                string[] v = transform.Substring(transform.IndexOf('(') + 1).Trim(')').Split(new char[] { ' ', ',' });
+                string[] args = transform.Substring(transform.IndexOf('(') + 1).Trim(')').Split(new char[] { ' ', ',' });
 
                 if(transform.StartsWith("matrix", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return new MatrixTransform(double.Parse(v[0]), double.Parse(v[1]), double.Parse(v[2]), double.Parse(v[3]), double.Parse(v[4]), double.Parse(v[5]));
+                    return new MatrixTransform(double.Parse(args[0]), double.Parse(args[1]), double.Parse(args[2]), double.Parse(args[3]), double.Parse(args[4]), double.Parse(args[5]));
                 }
                 if (transform.StartsWith("translate", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    double y = v.Length == 2 ? double.Parse(v[1]) : 0;
-                    return new TranslateTransform(double.Parse(v[0]), 0);
+                    double y = args.Length == 2 ? double.Parse(args[1]) : 0;
+                    return new TranslateTransform(double.Parse(args[0]), 0);
                 }
                 if (transform.StartsWith("scale", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    double y = v.Length == 2 ? double.Parse(v[1]) : double.Parse(v[0]);
-                    return new ScaleTransform(double.Parse(v[0]), y);
+                    double y = args.Length == 2 ? double.Parse(args[1]) : double.Parse(args[0]);
+                    return new ScaleTransform(double.Parse(args[0]), y);
                 }
                 if (transform.StartsWith("rotate", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    double x = v.Length == 3 ? double.Parse(v[1]) : 0;
-                    double y = v.Length == 3 ? double.Parse(v[2]) : 0;
-                    return new RotateTransform(double.Parse(v[0]), x, y);
+                    double x = args.Length == 3 ? double.Parse(args[1]) : 0;
+                    double y = args.Length == 3 ? double.Parse(args[2]) : 0;
+                    return new RotateTransform(double.Parse(args[0]), x, y);
                 }
                 if (transform.StartsWith("skewx", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return new SkewTransform(double.Parse(v[0]), 0);
+                    return new SkewTransform(double.Parse(args[0]), 0);
                 }
                 if (transform.StartsWith("skewy", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return new SkewTransform(0, double.Parse(v[0]));
+                    return new SkewTransform(0, double.Parse(args[0]));
                 }
             }
             catch
@@ -650,6 +692,45 @@ namespace Race
                 // ignore parse errors
             }
             return Transform.Identity;
+        }
+
+        public static Dictionary<string, object> GetDefinitions(this XElement element)
+        {
+            Dictionary<string, object> definitions = new Dictionary<string, object>();
+            XElement defs = element.DescendantsAndSelf().Where(d => "defs" == d.Name.LocalName).FirstOrDefault();
+
+            if(null != defs)
+            {
+                foreach(XElement definition in defs.Elements())
+                {
+                    string id = element.Attribute("id")?.Value;
+                    if(null != id)
+                    {
+                        if(definition.TryGetShape(out Shape shape))
+                        {
+                            definitions[id] = shape;
+                        }
+                        else
+                        {
+                            switch (definition.Name.LocalName.ToLower())
+                            {
+                                case "lineargradient":
+                                    if(definition.TryGetLinearGradientBrush(out LinearGradientBrush linearGradientBrush))
+                                    {
+                                        definitions[id] = linearGradientBrush;
+                                    }
+                                    break;
+                                case "radialGradient":
+                                    break;
+                                case "pattern":
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return definitions;
         }
         #endregion
 

@@ -8,3 +8,4 @@ Work in progress.
   - velocity stop at crash point and permanent speed penalty
 * svg implement non-solidcolor brushes
 * svg implement \<image /\> tag
+* svg implement \<use /\> tag
