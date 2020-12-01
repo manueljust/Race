@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Race"
+        xmlns:util="clr-namespace:Race.Util"
         mc:Ignorable="d"
         x:Name="thisNGD"
         Title="New Game" Height="600" Width="800">
@@ -26,7 +27,7 @@
         <Label Grid.Column="0" Grid.Row="1" DockPanel.Dock="Left" Content="Direction" />
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
             <StackPanel.Resources>
-                <local:ComparisonConverter x:Key="ComparisonConverter" />
+                <util:ComparisonConverter x:Key="ComparisonConverter" />
             </StackPanel.Resources>
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Counterclockwise}, UpdateSourceTrigger=PropertyChanged}" />

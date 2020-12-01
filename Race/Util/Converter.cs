@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
-namespace Race
+namespace Race.Util
 {
     public class ComparisonConverter : IValueConverter
     {
