@@ -71,6 +71,7 @@
     </Compile>
     <Compile Include="RaceDirection.cs" />
     <Compile Include="Util\ShapeExtensions.cs" />
+    <Compile Include="Util\StringExtensions.cs" />
     <Compile Include="Util\SvgHelper.cs" />
     <Compile Include="PropertyChangedAware.cs" />
     <Compile Include="Track.cs" />

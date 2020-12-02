@@ -29,11 +29,6 @@
          offset="1"
          id="stop862" />
     </linearGradient>
-    <pattern
-       inkscape:collect="always"
-       xlink:href="#pattern3419"
-       id="pattern3515"
-       patternTransform="matrix(2.2065144,1.1062968,-1.1062968,2.2065144,362.11223,47.245287)" />
     <linearGradient
        inkscape:collect="always"
        id="linearGradient858-6">
@@ -60,8 +55,8 @@
        spreadMethod="pad" />
     <pattern
        patternUnits="userSpaceOnUse"
-       width="11.428561"
-       height="11.428575"
+       width="10"
+       height="10"
        patternTransform="translate(361.60715,54.821431)"
        id="pattern3419">
       <rect
@@ -76,24 +71,29 @@
          id="rect3390-8"
          width="5"
          height="5"
-         x="5.7142749"
+         x="5"
          y="0" />
       <rect
          style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.755906;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
          id="rect3390-2"
          width="5"
          height="5"
-         x="5.7142749"
-         y="5.7142892" />
+         x="5"
+         y="5" />
       <rect
          style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.755906;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
          id="rect3390-80"
          width="5"
          height="5"
          x="0"
-         y="5.7142892" />
+         y="5" />
     </pattern>
-    <linearGradient
+	<pattern
+		inkscape:collect="always"
+		xlink:href="#pattern3419"
+		id="pattern3515"
+		patternTransform="matrix(2.2065144,1.1062968,-1.1062968,2.2065144,362.11223,47.245287)" />
+	 <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient864"
        id="linearGradient866"

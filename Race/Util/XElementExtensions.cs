@@ -182,8 +182,12 @@ namespace Race.Util
                     }
                     break;
                 case "image":
-                    shape = null;
-                    return false;
+                    if(element.TryGetImageRectangle(out Rectangle imageRectangle, definitions))
+                    {
+                        shape = imageRectangle;
+                        return true;
+                    }
+                    break;
             }
             shape = null;
             return false;
@@ -391,6 +395,44 @@ namespace Race.Util
             }
         }
 
+        public static bool TryGetImageRectangle(this XElement element, out Rectangle imageRectangle, Dictionary<string, object> definitions = null)
+        {
+            try
+            {
+                double width = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("width")?.Value);
+                double height = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("height")?.Value);
+                double x = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("x")?.Value);
+                double y = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("y")?.Value);
+                string aspectRatio = element.Attribute("preserveAspectRatio")?.Value ?? "none";
+
+                imageRectangle = new Rectangle()
+                {
+                    Fill = element.GetImageBrush(definitions),
+                    Width = width,
+                    Height = height,
+                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
+                };
+
+                imageRectangle.ApplyStyle(element.GetStyle(new Dictionary<string, string>()), definitions);
+                return true;
+            }
+            catch
+            {
+                imageRectangle = null;
+                return false;
+            }
+        }
+
+        public static ImageBrush GetImageBrush(this XElement element, Dictionary<string, object> definitions = null)
+        {
+            string link = element.Attributes().Where(a => a.Name.LocalName == "href").FirstOrDefault()?.Value ?? "";
+            return new ImageBrush()
+            {
+                ImageSource = link.GetImageSourceFromSvgLink(),
+            };
+        }
+
+
         public static bool TryGetText(this XElement element, out Path text, Dictionary<string, object> definitions = null)
         {
             try
@@ -453,10 +495,10 @@ namespace Race.Util
         {
             try
             {
-                //double x1 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("x1")?.Value);
-                //double y1 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("y1")?.Value);
-                //double x2 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("x2")?.Value);
-                //double y2 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("y2")?.Value);
+                double x1 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("x1")?.Value);
+                double y1 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("y1")?.Value);
+                double x2 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("x2")?.Value);
+                double y2 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("y2")?.Value);
 
                 GradientStopCollection stops;
                 string linkId = element.Attributes().Where(a => a.Name.LocalName == "href").FirstOrDefault()?.Value.Substring(1) ?? "";
@@ -471,11 +513,13 @@ namespace Race.Util
 
                 brush = new LinearGradientBrush()
                 {
+                    MappingMode = BrushMappingMode.Absolute,
                     GradientStops = stops,
-                    //StartPoint = new Point(x1, y1),
-                    //EndPoint = new Point(x2, y2),
+                    StartPoint = new Point(x1, y1),
+                    EndPoint = new Point(x2, y2),
                     Transform = element.GetTransform("gradientTransorm"),
                 };
+
                 return true;
             }
             catch
@@ -489,12 +533,12 @@ namespace Race.Util
         {
             try
             {
-                //double x = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("cx")?.Value);
-                //double y = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("cy")?.Value);
-                //double r = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("r")?.Value);
-                //double fr = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fr")?.Value);
-                //double fx = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fx")?.Value);
-                //double fy = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fy")?.Value);
+                double x = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("cx")?.Value);
+                double y = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("cy")?.Value);
+                double r = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("r")?.Value);
+                double fr = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fr")?.Value);
+                double fx = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fx")?.Value);
+                double fy = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fy")?.Value);
                 GradientSpreadMethod spreadMethod = Parser.ParseGradiendSpreadMethod(element.Attribute("spreadMethod")?.Value);
 
 
@@ -511,14 +555,65 @@ namespace Race.Util
 
                 brush = new RadialGradientBrush()
                 {
-                    //Center = new Point(x, y),
-                    //RadiusX = r,
-                    //RadiusY = r,
-                    //GradientOrigin = new Point(fx, fy),
+                    MappingMode = BrushMappingMode.Absolute,
+                    Center = new Point(x, y),
+                    RadiusX = r,
+                    RadiusY = r,
+                    GradientOrigin = new Point(fx, fy),
                     GradientStops = stops,
                     SpreadMethod = spreadMethod,
                     Transform = element.GetTransform("gradientTransorm"),
                 };
+
+                return true;
+            }
+            catch
+            {
+                brush = null;
+            }
+            return false;
+        }
+
+        public static bool TryGetVisualBrush(this XElement element, out VisualBrush brush, Dictionary<string, object> definitions = null)
+        {
+            try
+            {
+                string linkId = element.Attributes().Where(a => a.Name.LocalName == "href").FirstOrDefault()?.Value.Substring(1) ?? "";
+                if (null != definitions && definitions.ContainsKey(linkId))
+                {
+                    brush = ((VisualBrush)definitions[linkId]).Clone();
+                    brush.Transform = element.GetTransform();
+                    return true;
+                }
+
+
+                double width = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("width")?.Value);
+                double height = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("height")?.Value);
+
+                System.Windows.Controls.Canvas c = new System.Windows.Controls.Canvas()
+                {
+                    Height = height,
+                    Width = width,
+                };
+                foreach(XElement child in element.Elements())
+                {
+                    if(child.TryGetShape(out Shape shape, definitions))
+                    {
+                        c.Children.Add(shape);
+                    }
+                }
+
+                brush = new VisualBrush()
+                {
+                    Viewbox = new Rect(new Point(0, 0), new Size(width, height)),
+                    ViewboxUnits = BrushMappingMode.Absolute,
+                    Viewport = new Rect(new Point(0, 0), new Size(width, height)),
+                    ViewportUnits = BrushMappingMode.Absolute,
+                    TileMode = TileMode.Tile,
+                    Visual = c,
+                };
+                if(brush.CanFreeze) brush.Freeze();
+
                 return true;
             }
             catch
@@ -606,6 +701,10 @@ namespace Race.Util
                                     }
                                     break;
                                 case "pattern":
+                                    if(definition.TryGetVisualBrush(out VisualBrush visualBrush, definitions))
+                                    {
+                                        definitions[id] = visualBrush;
+                                    }
                                     break;
                             }
                         }
@@ -613,6 +712,13 @@ namespace Race.Util
                 }
             }
 
+            foreach(Freezable f in definitions.Values.OfType<Freezable>())
+            {
+                if(f.CanFreeze)
+                {
+                    f.Freeze();
+                }
+            }
             return definitions;
         }
     }
