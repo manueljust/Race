@@ -453,6 +453,11 @@ namespace Race.Util
         {
             try
             {
+                //double x1 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("x1")?.Value);
+                //double y1 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("y1")?.Value);
+                //double x2 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("x2")?.Value);
+                //double y2 = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("y2")?.Value);
+
                 GradientStopCollection stops;
                 string linkId = element.Attributes().Where(a => a.Name.LocalName == "href").FirstOrDefault()?.Value.Substring(1) ?? "";
                 if (null != definitions && definitions.ContainsKey(linkId))
@@ -467,6 +472,8 @@ namespace Race.Util
                 brush = new LinearGradientBrush()
                 {
                     GradientStops = stops,
+                    //StartPoint = new Point(x1, y1),
+                    //EndPoint = new Point(x2, y2),
                     Transform = element.GetTransform("gradientTransorm"),
                 };
                 return true;
@@ -482,12 +489,12 @@ namespace Race.Util
         {
             try
             {
-                double x = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("cx")?.Value);
-                double y = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("cy")?.Value);
-                double r = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("r")?.Value);
-                double fr = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fr")?.Value);
-                double fx = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fx")?.Value);
-                double fy = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fy")?.Value);
+                //double x = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("cx")?.Value);
+                //double y = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("cy")?.Value);
+                //double r = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("r")?.Value);
+                //double fr = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fr")?.Value);
+                //double fx = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fx")?.Value);
+                //double fy = Parser.ParseDoubleIgnoreNonDigits(element.Attribute("fy")?.Value);
                 GradientSpreadMethod spreadMethod = Parser.ParseGradiendSpreadMethod(element.Attribute("spreadMethod")?.Value);
 
 
@@ -504,10 +511,10 @@ namespace Race.Util
 
                 brush = new RadialGradientBrush()
                 {
-                    Center = new Point(x, y),
-                    RadiusX = r,
-                    RadiusY = r,
-                    GradientOrigin = new Point(fx, fy),
+                    //Center = new Point(x, y),
+                    //RadiusX = r,
+                    //RadiusY = r,
+                    //GradientOrigin = new Point(fx, fy),
                     GradientStops = stops,
                     SpreadMethod = spreadMethod,
                     Transform = element.GetTransform("gradientTransorm"),
@@ -578,7 +585,7 @@ namespace Race.Util
                     string id = definition.Attribute("id")?.Value;
                     if (null != id)
                     {
-                        if (definition.TryGetShape(out Shape shape))
+                        if (definition.TryGetShape(out Shape shape, definitions))
                         {
                             definitions[id] = shape;
                         }
@@ -587,7 +594,7 @@ namespace Race.Util
                             switch (definition.Name.LocalName.ToLower())
                             {
                                 case "lineargradient":
-                                    if (definition.TryGetLinearGradientBrush(out LinearGradientBrush linearGradientBrush))
+                                    if (definition.TryGetLinearGradientBrush(out LinearGradientBrush linearGradientBrush, definitions))
                                     {
                                         definitions[id] = linearGradientBrush;
                                     }
