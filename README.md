@@ -6,6 +6,4 @@ Work in progress.
 * rework win condition
 * rework crash penalty
   - velocity stop at crash point and permanent speed penalty
-* svg implement non-solidcolor brushes
-* svg implement \<image /\> tag
 * svg implement \<use /\> tag
