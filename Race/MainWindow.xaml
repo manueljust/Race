@@ -18,12 +18,6 @@
             </MenuItem>
         </Menu>
         <StackPanel DockPanel.Dock="Bottom">
-            <StackPanel.Background>
-                <LinearGradientBrush StartPoint="0,1" EndPoint="1,1">
-                    <GradientStop Color="AliceBlue" Offset="0" />
-                    <GradientStop Color="Green" Offset="1" />
-                </LinearGradientBrush>
-            </StackPanel.Background>
             <StackPanel Orientation="Horizontal">
                 <TextBlock Width="40" Text="Power" />
                 <Slider Width="120" Minimum="0" Maximum="1" Value="{Binding ElementName=thisMW, Path=Game.ActiveCar.TargetPower}" />
