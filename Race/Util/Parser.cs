@@ -85,20 +85,15 @@ namespace Race.Util
             }
         }
 
-        public static double ParseDoubleIgnoreNonDigits(string s)
+        public static double ParseDoubleIgnoreNonDigits(string s, double defaultValue = 0.0)
         {
-            if (null == s)
+            if(double.TryParse(string.Join("", s.Where(c => char.IsDigit(c) || '.' == c || '-' == c)), out double value))
             {
-                return 0.0;
+                return value;
             }
-            try
+            else
             {
-                return double.Parse(string.Join("", s.Where(c => char.IsDigit(c) || '.' == c)));
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debugger.Break();
-                return 0;
+                return defaultValue;
             }
         }
 

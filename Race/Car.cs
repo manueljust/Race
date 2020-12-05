@@ -78,10 +78,17 @@ namespace Race
             return target;
         }
 
-        public void Move(double penalty)
+        public void Move(double crashLength)
         {
             Point target = GetTarget();
-            Velocity = (target - Position) * penalty;
+
+            Velocity = (target - Position);
+            double penalty = 1;
+            if(0 != crashLength)
+            {
+                penalty = Math.Pow(crashLength, 3) / (PowerShape.Area + Math.Pow(crashLength, 3));
+                Velocity *= (crashLength / Velocity.Length);
+            }
 
             if (0 != Velocity.LengthSquared)
             {
@@ -89,6 +96,12 @@ namespace Race
             }
 
             Position += Velocity;
+
+            if(1.0 > penalty)
+            {
+                Velocity = new Vector(0, 0);
+                PowerShape.Area *= penalty;
+            }
 
             StatusText = $"Position: {Position}, Velocity: {Velocity}, Angle: {Angle}";
         }

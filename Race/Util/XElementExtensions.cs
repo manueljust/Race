@@ -234,8 +234,8 @@ namespace Race.Util
                 {
                     Fill = element.GetBrush("fill", definitions),
                     Stroke = element.GetBrush("stroke"),
-                    Height = 2 * rx,
-                    Width = 2 * ry,
+                    Height = 2 * ry,
+                    Width = 2 * rx,
                     RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x - rx, y - ry) }) },
                 };
 
@@ -648,8 +648,13 @@ namespace Race.Util
                 }
                 if (transform.StartsWith("rotate", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    double x = args.Length == 3 ? double.Parse(args[1]) : 0;
-                    double y = args.Length == 3 ? double.Parse(args[2]) : 0;
+                    double x = Parser.ParseDoubleIgnoreNonDigits(element.Attributes().FirstOrDefault(a => "transform-center-x" == a.Name.LocalName)?.Value);
+                    double y = Parser.ParseDoubleIgnoreNonDigits(element.Attributes().FirstOrDefault(a => "transform-center-y" == a.Name.LocalName)?.Value);
+                    if(3 == args.Length)
+                    {
+                        x = double.Parse(args[1]);
+                        y = double.Parse(args[2]);
+                    }
                     return new RotateTransform(double.Parse(args[0]), x, y);
                 }
                 if (transform.StartsWith("skewx", StringComparison.InvariantCultureIgnoreCase))

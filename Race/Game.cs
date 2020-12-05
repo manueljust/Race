@@ -19,8 +19,8 @@ namespace Race
         private static readonly double _lineThickness = 0.8;
 
         private Line _previewLine = new Line();
-        private Line _centerLine = new Line() { StrokeThickness = _lineThickness, Stroke = Brushes.Brown, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7 };
-        private Line _steeringLine = new Line() { StrokeThickness = _lineThickness, Stroke = Brushes.Red, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7 };
+        private Line _centerLine = new Line() { StrokeThickness = _lineThickness, Stroke = Brushes.Brown, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7, StrokeEndLineCap = PenLineCap.Round, StrokeStartLineCap = PenLineCap.Round };
+        private Line _steeringLine = new Line() { StrokeThickness = _lineThickness, Stroke = Brushes.Red, StrokeDashArray = { 1, 0.5 }, Opacity = 0.7, StrokeEndLineCap = PenLineCap.Round, StrokeStartLineCap = PenLineCap.Round };
         private PowerShape _targetPowerShape = new PowerShape() { StrokeThickness = 1, Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#330088FF")) };
 
         private Track _track = new Track();
@@ -78,6 +78,7 @@ namespace Race
                 {
                     car.Position = _track.Start.StartPoint() + (i / cars.Count()) * _track.Start.Vector();
                     car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(_track.Start.Vector().X, _track.Start.Vector().Y) : -Math.Atan2(-_track.Start.Vector().X, -_track.Start.Vector().Y);
+                    car.PowerShape.Area = 100.0;
                     car.Velocity = new Vector();
                     car.PropertyChanged += Car_PropertyChanged;
                     _trails[car] = new List<Shape>();
@@ -179,7 +180,8 @@ namespace Race
                 Y1 = ActiveCar.Position.Y,
                 X2 = target.X,
                 Y2 = target.Y,
-                StrokeStartLineCap = PenLineCap.Triangle,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
             };
             _centerLine.Stroke = new SolidColorBrush(ActiveCar.Color);
             _centerLine.X1 = ActiveCar.Position.X;
@@ -204,56 +206,60 @@ namespace Race
 
         private bool IsWin()
         {
-            return 2 < _trails[ActiveCar].Count && _track.Goal.CollidesWith(_previewLine);
+            return 2 < _trails[ActiveCar].Count && _track.Goal.CollidesWith(_previewLine, out _);
         }
 
-        private bool IsCrash()
+        private bool IsCrash(out Point crashPoint)
         {
-            IntersectionDetail onTrack = _track.Bounds.RenderedGeometry.FillContainsWithDetail(_previewLine.RenderedGeometry);
-
-            if (onTrack != IntersectionDetail.FullyContains)
+            Point[] trackIntersections = PowerShape.GetIntersectionPoints(_track.Bounds.RenderedGeometry, _previewLine.RenderedGeometry);
+            if (0 != trackIntersections.Length)
             {
+                crashPoint = trackIntersections.Aggregate((min, p) => p.DistanceSquared(_previewLine.StartPoint()) < min.DistanceSquared(_previewLine.StartPoint()) ? p : min);
                 return true;
             }
 
             foreach (Shape s in _track.Obstacles)
             {
-                if(s.CollidesWith(_previewLine))
+                if(s.CollidesWith(_previewLine, out Point collisionPoint))
                 {
+                    crashPoint = collisionPoint;
                     return true;
                 }
             }
-
+            crashPoint = default;
             return false;
         }
 
-        int CarIndex = 0;
+        private int CarIndex { get; set; } = 0;
 
         public void Move()
         {
             _previewLine.Stroke = new SolidColorBrush(ActiveCar.Color);
 
-            double penalty = 1;
-            if (IsCrash())
+
+            double crashLength = 0;
+            if (IsCrash(out Point crashPoint))
             {
-                //_previewLine.Stroke = Brushes.Red;
+                crashLength = 0.99 * (_previewLine.StartPoint() - crashPoint).Length;
+
                 _previewLine.StrokeDashArray = new DoubleCollection(new double[] { 1.2, 0.8 });
-                penalty = 0.5;
+                _previewLine.X2 = crashPoint.X;
+                _previewLine.Y2 = crashPoint.Y;
             }
 
             foreach (Shape s in _trails[ActiveCar])
             {
-                s.Opacity *= 0.9;
+                s.Opacity *= 0.8;
             }
 
-            ActiveCar.Move(penalty);
+            ActiveCar.Move(crashLength);
 
             if (IsWin())
             {
                 MessageBox.Show("Winner!");
             }
 
-            DrawCar(ActiveCar);
+            //DrawCar(ActiveCar);
 
             ActiveCar = _cars[++CarIndex % _cars.Count];
 
