@@ -46,8 +46,6 @@ namespace Race
         public NewGameDialog()
         {
             InitializeComponent();
-
-            Color c = Colors.Red;
         }
 
         private void ButtonBrowse_Click(object sender, RoutedEventArgs e)

@@ -54,7 +54,7 @@ namespace Race
 
         private static object CoerceEdgyness(DependencyObject d, object baseValue)
         {
-            return Constrained((double)baseValue, 0, 2, MagicCircleNumber);
+            return Constrained((double)baseValue, 0, 1.8, MagicCircleNumber);
         }
 
         private static object CoercePower(DependencyObject d, object baseValue)
@@ -148,17 +148,17 @@ namespace Race
             }
         }
 
-        public static Point[] GetIntersectionPoints(Geometry g1, Geometry g2)
+        public static List<Point> GetIntersectionPoints(Geometry g1, Geometry g2)
         {
             Geometry og1 = g1.GetWidenedPathGeometry(new Pen(Brushes.Black, 0.01));
             Geometry og2 = g2.GetWidenedPathGeometry(new Pen(Brushes.Black, 0.01));
             CombinedGeometry cg = new CombinedGeometry(GeometryCombineMode.Intersect, og1, og2);
             PathGeometry pg = cg.GetFlattenedPathGeometry();
-            Point[] result = new Point[pg.Figures.Count];
-            for (int i = 0; i < pg.Figures.Count; i++)
+            List<Point> result = new List<Point>();
+            foreach(PathFigure figure in pg.Figures)
             {
-                Rect fig = new PathGeometry(new PathFigure[] { pg.Figures[i] }).Bounds;
-                result[i] = new Point(fig.Left + fig.Width / 2.0, fig.Top + fig.Height / 2.0);
+                Rect fig = new PathGeometry(new PathFigure[] { figure }).Bounds;
+                result.Add(new Point(fig.Left + fig.Width / 2.0, fig.Top + fig.Height / 2.0));
             }
             return result;
         }

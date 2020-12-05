@@ -147,24 +147,27 @@ namespace Race
 
         private void DrawCar(Car car)
         {
+            double h = 2;
+            double w = 4;
+
             Path path = new Path()
             {
                 Data = car.Geometry,
                 Fill = new SolidColorBrush(car.Color),
-                RenderTransform = new RotateTransform(180 * car.Angle / Math.PI, 3, 1.5),
-                Stretch = Stretch.Uniform,
-                Stroke = Brushes.Black,
-                StrokeThickness = 0.1,
-                Height = 3,
-                Width = 6,
+                RenderTransform = new RotateTransform(180 * car.Angle / Math.PI, 0.5*w, 0.5*h),
+                Stretch = Stretch.Fill,
+                //Stroke = Brushes.Black,
+                //StrokeThickness = 0.1,
+                Height = h,
+                Width = w,
                 ToolTip = car.Driver,
             };
             _trails[car].ForEach(s => s.ToolTip = null);
             _trails[car].Add(path);
 
             Canvas.Children.Add(path);
-            Canvas.SetLeft(path, car.Position.X - path.Width / 2);
-            Canvas.SetTop(path, car.Position.Y - path.Height / 2);
+            Canvas.SetLeft(path, car.Position.X - 0.5*w);
+            Canvas.SetTop(path, car.Position.Y - 0.5*h);
         }
 
         private void DrawTargetEllipse()
@@ -211,23 +214,26 @@ namespace Race
 
         private bool IsCrash(out Point crashPoint)
         {
-            Point[] trackIntersections = PowerShape.GetIntersectionPoints(_track.Bounds.RenderedGeometry, _previewLine.RenderedGeometry);
-            if (0 != trackIntersections.Length)
-            {
-                crashPoint = trackIntersections.Aggregate((min, p) => p.DistanceSquared(_previewLine.StartPoint()) < min.DistanceSquared(_previewLine.StartPoint()) ? p : min);
-                return true;
-            }
+            List<Point> crashPoints = PowerShape.GetIntersectionPoints(_track.Bounds.RenderedGeometry, _previewLine.RenderedGeometry);
 
             foreach (Shape s in _track.Obstacles)
             {
                 if(s.CollidesWith(_previewLine, out Point collisionPoint))
                 {
-                    crashPoint = collisionPoint;
-                    return true;
+                    crashPoints.Add(collisionPoint);
                 }
             }
-            crashPoint = default;
-            return false;
+
+            if(0 == crashPoints.Count)
+            {
+                crashPoint = default;
+                return false;
+            }
+            else
+            {
+                crashPoint = crashPoints.Aggregate((min, p) => p.DistanceSquared(_previewLine.StartPoint()) < min.DistanceSquared(_previewLine.StartPoint()) ? p : min);
+                return true;
+            }
         }
 
         private int CarIndex { get; set; } = 0;
@@ -259,7 +265,7 @@ namespace Race
                 MessageBox.Show("Winner!");
             }
 
-            //DrawCar(ActiveCar);
+            DrawCar(ActiveCar);
 
             ActiveCar = _cars[++CarIndex % _cars.Count];
 

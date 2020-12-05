@@ -7,3 +7,6 @@ Work in progress.
 * rework crash penalty
   - velocity stop at crash point and permanent speed penalty
 * svg implement \<use /\> tag
+* fix transform of image import
+* fix pattern import (unintended padding)
+* fix powershape area

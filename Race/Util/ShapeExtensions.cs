@@ -76,8 +76,8 @@ namespace Race.Util
             Geometry transformedGeometry = Geometry.Combine(Geometry.Empty, shape.RenderedGeometry, GeometryCombineMode.Union, shape.RenderTransform);
             if (0 != transformedGeometry.GetArea())
             {
-                Point[] intersectionPoints = PowerShape.GetIntersectionPoints(new CombinedGeometry(GeometryCombineMode.Union, Geometry.Empty, shape.RenderedGeometry, shape.RenderTransform), line.RenderedGeometry);
-                if (0 != intersectionPoints.Length)
+                List<Point> intersectionPoints = PowerShape.GetIntersectionPoints(new CombinedGeometry(GeometryCombineMode.Union, Geometry.Empty, shape.RenderedGeometry, shape.RenderTransform), line.RenderedGeometry);
+                if (0 != intersectionPoints.Count)
                 {
                     collisionPoint = intersectionPoints.Aggregate((min, p) => p.DistanceSquared(line.StartPoint()) < min.DistanceSquared(line.StartPoint()) ? p : min);
                     return true;

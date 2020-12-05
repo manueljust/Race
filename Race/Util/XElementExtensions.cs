@@ -410,7 +410,7 @@ namespace Race.Util
                     Fill = element.GetImageBrush(definitions),
                     Width = width,
                     Height = height,
-                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { element.GetTransform(), new TranslateTransform(x, y) }) },
+                    RenderTransform = new TransformGroup() { Children = new TransformCollection(new Transform[] { new TranslateTransform(x, y), element.GetTransform() }) },
                 };
 
                 imageRectangle.ApplyStyle(element.GetStyle(new Dictionary<string, string>()), definitions);
