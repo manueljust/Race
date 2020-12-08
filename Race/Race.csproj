@@ -57,6 +57,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="HostOnlineGameDialog.xaml.cs">
+      <DependentUpon>HostOnlineGameDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MoveParameter.cs" />
+    <Compile Include="NetworkConnector.cs" />
+    <Compile Include="NewGameDialogResult.cs" />
+    <Compile Include="JoinOnlineGameDialog.xaml.cs">
+      <DependentUpon>JoinOnlineGameDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PlayerType.cs" />
+    <Compile Include="Util\ConcurrentQueueExtensions.cs" />
     <Compile Include="Util\LineExtensions.cs" />
     <Compile Include="Util\Parser.cs" />
     <Compile Include="Util\PathFigureExtensions.cs" />
@@ -77,6 +88,10 @@
     <Compile Include="Track.cs" />
     <Compile Include="Tracks.cs" />
     <Compile Include="Util\XElementExtensions.cs" />
+    <Page Include="HostOnlineGameDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -91,6 +106,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="NewGameDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="JoinOnlineGameDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

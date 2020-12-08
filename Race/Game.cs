@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -86,12 +85,22 @@ namespace Race
                     i += 1;
                 }
 
-                ActiveCar = _cars[0];
 
                 DrawTrack();
 
-                DrawTargetEllipse();
-
+                ActiveCar = _cars[0];
+                if(PlayerType.Human == ActiveCar.PlayerType)
+                {
+                    DrawTargetEllipse();
+                }
+                else
+                {
+                    Task.Run(async () =>
+                    {
+                        await ActiveCar.WaitForMove();
+                        Move();
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -262,7 +271,7 @@ namespace Race
 
             if (IsWin())
             {
-                MessageBox.Show("Winner!");
+                MessageBox.Show($"{ActiveCar.Driver} Wins the race!", "Winner");
             }
 
             DrawCar(ActiveCar);

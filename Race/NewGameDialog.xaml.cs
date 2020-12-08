@@ -22,25 +22,6 @@ namespace Race
     /// </summary>
     public partial class NewGameDialog : Window
     {
-        public class NewGameDialogResult : PropertyChangedAware
-        {
-            public ObservableCollection<Car> Cars { get; set; } = new ObservableCollection<Car>(Car.DefaultCars);
-
-            private string _trackFileName = "Tracks/Track1.svg";
-            public string TrackFileName
-            {
-                get { return _trackFileName; }
-                set { SetProperty(ref _trackFileName, value); }
-            }
-
-            private RaceDirection _raceDirection = RaceDirection.Counterclockwise;
-            public RaceDirection RaceDirection
-            {
-                get { return _raceDirection; }
-                set { SetProperty(ref _raceDirection, value); }
-            }
-        }
-
         public NewGameDialogResult Result { get; } = new NewGameDialogResult();
 
         public NewGameDialog()

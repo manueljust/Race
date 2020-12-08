@@ -13,7 +13,10 @@ namespace Race.Util
     {
         private static string FailImageText { get; } = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAIAAABv85FHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABASURBVBhXY3gro/IfGwCKM0AoCB8OICIgOTgHAuBsqBwQQISQFSHkgABZAgiI0IcsBGeD5NCMAgKICG7/yagAAAxz0z5TKpbwAAAAAElFTkSuQmCC";
 
-
+        public static Dictionary<string, string> ToDictionary(this string s, string elementDelimiter = ",", string keyValueDelimiter = ":")
+        {
+            return s.Split(new string[] { elementDelimiter }, StringSplitOptions.RemoveEmptyEntries).ToDictionary(x => x.Substring(0, x.IndexOf(keyValueDelimiter)), x => x.Substring(x.IndexOf(keyValueDelimiter) + keyValueDelimiter.Length));
+        }
 
         public static ImageSource GetImageSourceFromSvgLink(this string str)
         {

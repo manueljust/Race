@@ -10,3 +10,4 @@ Work in progress.
 * fix transform of image import
 * fix pattern import (unintended padding)
 * fix powershape area
+* p2p
