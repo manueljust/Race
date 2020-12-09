@@ -1,6 +1,7 @@
 ﻿using Race.Util;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
@@ -59,17 +60,34 @@ namespace Race
 
         public async Task<Car> GetRemoteCar()
         {
-            return Car.FromString(await GetResponse("getCar"));
+            return Car.FromString(await GetResponse());
         }
 
         public async Task<MoveParameter> GetMoveParameter()
         {
-            return MoveParameter.FromString(await GetResponse("getMove"));
+            return MoveParameter.FromString(await GetResponse());
+        }
+
+        public async Task<NewGameDialogResult> GetTrackInfo()
+        {
+            string resultString = await GetResponse();
+            Dictionary<string, string> d = resultString.ToDictionary();
+            return new NewGameDialogResult()
+            {
+                TrackFileName = d["track"],
+                RaceDirection = (RaceDirection)Enum.Parse(typeof(RaceDirection), d["direction"]),
+            };
         }
 
         public void ConfirmStart(Car car)
         {
             _writer.WriteLine(car.GetStringRepresentation());
+            _writer.Flush();
+        }
+
+        internal void SendTrackInfo(NewGameDialogResult result)
+        {
+            _writer.WriteLine($"track:{result.TrackFileName},direction:{result.RaceDirection}");
             _writer.Flush();
         }
 
@@ -79,10 +97,8 @@ namespace Race
             _writer.Flush();
         }
 
-        private async Task<string> GetResponse(string query, TimeSpan timeout = default)
+        private async Task<string> GetResponse(TimeSpan timeout = default)
         {
-            _writer.WriteLine(query);
-            _writer.Flush();
             return await _inBuffer.DequeueAsync(_cts.Token, timeout);
         }
     }

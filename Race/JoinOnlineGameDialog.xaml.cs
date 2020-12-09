@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Net;
+using System.Net.Sockets;
 
 namespace Race
 {
@@ -20,30 +21,51 @@ namespace Race
     /// </summary>
     public partial class JoinOnlineGameDialog : Window
     {
-        public NewGameDialogResult Result { get; } = new NewGameDialogResult();
+        public NewGameDialogResult Result { get; set; } = new NewGameDialogResult();
+        private NetworkConnector _networkConnector = null;
 
         public JoinOnlineGameDialog()
         {
             InitializeComponent();
-            Result.Cars.Clear();
-            Result.Cars.Add(new Car() { Driver = "Guest", Color = Colors.Green });
             startButton.IsEnabled = false;
-            ipBox.TextChanged += IpBox_TextChanged;
         }
 
-        private void IpBox_TextChanged(object sender, TextChangedEventArgs e)
+        private async void ButtonStart_Click(object sender, RoutedEventArgs e)
         {
-            if(IPAddress.TryParse(ipBox.Text, out IPAddress address))
-            {
-                infoBox.Text += $" ip {ipBox.Text} parsed successfully.";
+            infoBox.Text += " waiting for hosst to start";
+            Car host = await _networkConnector.GetRemoteCar();
+            host.PlayerType = PlayerType.Online;
+            host.NetworkConnector = _networkConnector;
+            Result.Cars.Add(host);
 
-            }
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
             DialogResult = true;
             Close();
+        }
+
+        private async void ButtonConnect_Click(object sender, RoutedEventArgs e)
+        {
+            if (IPAddress.TryParse(ipBox.Text, out IPAddress address))
+            {
+                infoBox.Text += $" ip {address} parsed successfully.";
+
+                TcpClient client = new TcpClient(new IPEndPoint(address, 5001));
+                if (client.Connected)
+                {
+                    _networkConnector = new NetworkConnector(client);
+                    Result = await _networkConnector.GetTrackInfo();
+                    Car car = new Car()
+                    {
+                        Driver = "guest",
+                    };
+                    Result.Cars.Add(car);
+                    ipStuff.IsEnabled = false;
+                    startButton.IsEnabled = true;
+                }
+                else
+                {
+                    infoBox.Text += " could not connect.";
+                }
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Win32;
 
 namespace Race
 {
@@ -39,12 +40,15 @@ namespace Race
                     car.NetworkConnector.ConfirmStart(Result.Cars.First());
                 }
             }
+
             DialogResult = true;
             Close();
         }
 
         private async void ButtonHost_Click(object sender, RoutedEventArgs e)
         {
+            trackSelector.IsEnabled = false;
+            directionSelector.IsEnabled = false;
             infoBox.Text = $"Waiting for opponent.";
             string local = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => AddressFamily.InterNetwork == ip.AddressFamily).Select(ip => ip.ToString()).FirstOrDefault();
             if(null != local && IPAddress.TryParse(local, out IPAddress address))
@@ -56,8 +60,10 @@ namespace Race
                 // get driver, color and powershape from remote
                 NetworkConnector c = new NetworkConnector(await listener.AcceptTcpClientAsync());
                 infoBox.Text += $" accepted connection from {c}. waiting for opponent to chose car.";
+                c.SendTrackInfo(Result);
 
                 Car car = await c.GetRemoteCar();
+                car.PlayerType = PlayerType.Online;
                 car.NetworkConnector = c;
                 Result.Cars.Add(car);
                 infoBox.Text += $" {car.Driver} is ready to start.";
@@ -68,7 +74,11 @@ namespace Race
 
         private void ButtonBrowse_Click(object sender, RoutedEventArgs e)
         {
-
+            OpenFileDialog dlg = new OpenFileDialog();
+            if (dlg.ShowDialog() == true)
+            {
+                Result.TrackFileName = dlg.FileName;
+            }
         }
     }
 }

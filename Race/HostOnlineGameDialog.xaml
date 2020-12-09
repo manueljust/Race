@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Race"
         xmlns:util="clr-namespace:Race.Util"
         mc:Ignorable="d"
+        x:Name="thisNGD"
         Title="HostOnlineGameDialog" Height="450" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>

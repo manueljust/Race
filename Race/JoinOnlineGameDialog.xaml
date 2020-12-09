@@ -5,13 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Race"
         mc:Ignorable="d"
+        x:Name="thisNGD"
         Title="Join Online Game" Height="450" Width="800">
     <StackPanel>
-        <StackPanel Orientation="Horizontal">
+        <StackPanel x:Name="ipStuff" Orientation="Horizontal">
             <Label Content="IP"/>
             <TextBox x:Name="ipBox" Width="200" />
+            <Button Content="connect" Click="ButtonConnect_Click" />
         </StackPanel>
         <TextBlock x:Name="infoBox" Text="Enter IP of opponent" />
-        <Button x:Name="startButton" Content="Start" Click="Button_Click"/>
+        <Button x:Name="startButton" Content="Start" Click="ButtonStart_Click"/>
     </StackPanel>
 </Window>

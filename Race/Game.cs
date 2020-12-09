@@ -59,10 +59,10 @@ namespace Race
         {
             Canvas = new Canvas();
 
-            NewGame(@"Tracks\Track1.svg", Car.DefaultCars, 0 == _random.Next() % 2 ? RaceDirection.Clockwise : RaceDirection.Counterclockwise);
+            NewGame(@"Tracks\Track1.svg", Car.DefaultCars, 0 == _random.Next() % 2 ? RaceDirection.Clockwise : RaceDirection.Counterclockwise, "local");
         }
 
-        public void NewGame(string filename, IEnumerable<Car> cars, RaceDirection direction)
+        public void NewGame(string filename, IEnumerable<Car> cars, RaceDirection direction, string annotation)
         {
             Canvas.Children.Clear();
             _cars.Clear();
@@ -86,7 +86,7 @@ namespace Race
                 }
 
 
-                DrawTrack();
+                DrawTrack(annotation);
 
                 ActiveCar = _cars[0];
                 if(PlayerType.Human == ActiveCar.PlayerType)
@@ -95,10 +95,12 @@ namespace Race
                 }
                 else
                 {
+                    _centerLine.Stroke = Brushes.Transparent;
+                    _steeringLine.Stroke = Brushes.Transparent;
                     Task.Run(async () =>
                     {
                         await ActiveCar.WaitForMove();
-                        Move();
+                        await Move();
                     });
                 }
             }
@@ -108,7 +110,7 @@ namespace Race
             }
         }
 
-        private void DrawTrack()
+        private void DrawTrack(string annotation)
         {
             Canvas.Children.Clear();
 
@@ -132,6 +134,19 @@ namespace Race
             Canvas.Children.Add(_targetPowerShape);
             Canvas.Children.Add(_centerLine);
             Canvas.Children.Add(_steeringLine);
+
+
+            Path annotationPath = new Path()
+            {
+                Fill = Brushes.Yellow,
+                Stroke = Brushes.Black,
+                StrokeThickness = 0.2,
+                Data = PathGeometry.CreateFromGeometry(new FormattedText(annotation, System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("sans"), 8, Brushes.Red).BuildGeometry(new Point())),
+            };
+
+            Canvas.Children.Add(annotationPath);
+            Canvas.SetBottom(annotationPath, 2);
+            Canvas.SetLeft(annotationPath, 2);
 
             foreach(Car car in _cars)
             {
@@ -247,10 +262,17 @@ namespace Race
 
         private int CarIndex { get; set; } = 0;
 
-        public void Move()
+        public async Task Move()
         {
-            _previewLine.Stroke = new SolidColorBrush(ActiveCar.Color);
+            foreach(Car car in _cars)
+            {
+                if(PlayerType.Online == car.PlayerType)
+                {
+                    car.NetworkConnector.ConfirmMove(new MoveParameter(ActiveCar.TargetAngle, ActiveCar.TargetPower));
+                }
+            }
 
+            _previewLine.Stroke = new SolidColorBrush(ActiveCar.Color);
 
             double crashLength = 0;
             if (IsCrash(out Point crashPoint))
@@ -278,7 +300,18 @@ namespace Race
 
             ActiveCar = _cars[++CarIndex % _cars.Count];
 
-            DrawTargetEllipse();
+            if(PlayerType.Online == ActiveCar.PlayerType)
+            {
+                _steeringLine.Stroke = Brushes.Transparent;
+                _centerLine.Stroke = Brushes.Transparent;
+                await ActiveCar.WaitForMove();
+                await Move();
+            }
+            else
+            {
+                DrawTargetEllipse();
+            }
+
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)
