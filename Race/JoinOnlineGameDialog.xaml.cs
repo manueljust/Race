@@ -48,22 +48,31 @@ namespace Race
             {
                 infoBox.Text += $" ip {address} parsed successfully.";
 
-                TcpClient client = new TcpClient(new IPEndPoint(address, 5001));
-                if (client.Connected)
+                string local = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => AddressFamily.InterNetwork == ip.AddressFamily).Select(ip => ip.ToString()).FirstOrDefault();
+                if (null != local && IPAddress.TryParse(local, out IPAddress localAddress))
                 {
-                    _networkConnector = new NetworkConnector(client);
-                    Result = await _networkConnector.GetTrackInfo();
-                    Car car = new Car()
+                    TcpClient client = new TcpClient(new IPEndPoint(localAddress, 5001));
+                    client.Connect(new IPEndPoint(address, 5001));
+                    if (client.Connected)
                     {
-                        Driver = "guest",
-                    };
-                    Result.Cars.Add(car);
-                    ipStuff.IsEnabled = false;
-                    startButton.IsEnabled = true;
+                        _networkConnector = new NetworkConnector(client);
+                        Result = await _networkConnector.GetTrackInfo();
+                        Car car = new Car()
+                        {
+                            Driver = "guest",
+                        };
+                        Result.Cars.Add(car);
+                        ipStuff.IsEnabled = false;
+                        startButton.IsEnabled = true;
+                    }
+                    else
+                    {
+                        infoBox.Text += " could not connect.";
+                    }
                 }
                 else
                 {
-                    infoBox.Text += " could not connect.";
+                    infoBox.Text += " networking error.";
                 }
             }
         }

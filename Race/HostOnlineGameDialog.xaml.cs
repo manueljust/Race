@@ -60,6 +60,9 @@ namespace Race
                 // get driver, color and powershape from remote
                 NetworkConnector c = new NetworkConnector(await listener.AcceptTcpClientAsync());
                 infoBox.Text += $" accepted connection from {c}. waiting for opponent to chose car.";
+
+                // allow guest to setup read buffer
+                await Task.Delay(TimeSpan.FromSeconds(1));
                 c.SendTrackInfo(Result);
 
                 Car car = await c.GetRemoteCar();

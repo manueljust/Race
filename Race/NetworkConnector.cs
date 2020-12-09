@@ -41,6 +41,7 @@ namespace Race
             },
             _cts.Token,
             TaskCreationOptions.LongRunning);
+            _requestHandler.Start();
         }
 
         private static async Task<string> GetDelayedNullString(CancellationToken token, TimeSpan delay)
