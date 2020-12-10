@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -106,11 +107,24 @@ namespace Race
             }
         }
 
+        private AutoResetEvent _autoResetEvent = new AutoResetEvent(false);
+        public async Task ConfirmMove()
+        {
+            await Task.Run(_autoResetEvent.Set);
+        }
+
         public async Task WaitForMove()
         {
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            TargetAngle = 0.0;
-            TargetPower = 1.0;
+            if(PlayerType.Online == PlayerType)
+            {
+                MoveParameter move = await NetworkConnector.GetMoveParameter();
+                TargetAngle = move.Angle;
+                TargetPower = move.Power;
+            }
+            else
+            {
+                await Task.Run(_autoResetEvent.WaitOne);
+            }
         }
 
         private string _statusText = "Initialized";

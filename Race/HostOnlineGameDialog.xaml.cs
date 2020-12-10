@@ -64,13 +64,9 @@ namespace Race
                 c.SendTrackInfo(Result);
 
                 infoBox.Text += $" accepted connection from {c}. waiting for opponent to chose car.";
-                Car car = await c.GetRemoteCar();
+                Result.Cars.Add(await c.GetRemoteCar());
 
-                car.PlayerType = PlayerType.Online;
-                car.NetworkConnector = c;
-                Result.Cars.Add(car);
-                infoBox.Text += $" {car.Driver} is ready to start.";
-
+                infoBox.Text += $" {Result.Cars.Last().Driver} is ready to start.";
                 startButton.IsEnabled = true;
             }
         }

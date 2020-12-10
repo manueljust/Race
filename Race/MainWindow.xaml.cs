@@ -26,19 +26,13 @@ namespace Race
         {
             if (e.Key == Key.Enter)
             {
-                if(PlayerType.Human == Game.ActiveCar.PlayerType)
-                {
-                    await Game.Move();
-                }
+                await Game.ActiveCar.ConfirmMove();
             }
         }
 
         private async void Move_Click(object sender, RoutedEventArgs e)
         {
-            if (PlayerType.Human == Game.ActiveCar.PlayerType)
-            {
-                await Game.Move();
-            }
+            await Game.ActiveCar.ConfirmMove();
         }
 
         private void OnNew(object sender, ExecutedRoutedEventArgs e)

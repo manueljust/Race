@@ -62,7 +62,7 @@ namespace Race
             NewGame(@"Tracks\Track1.svg", Car.DefaultCars, 0 == _random.Next() % 2 ? RaceDirection.Clockwise : RaceDirection.Counterclockwise, "local");
         }
 
-        public void NewGame(string filename, IEnumerable<Car> cars, RaceDirection direction, string annotation)
+        public async Task NewGame(string filename, IEnumerable<Car> cars, RaceDirection direction, string annotation)
         {
             Canvas.Children.Clear();
             _cars.Clear();
@@ -75,8 +75,8 @@ namespace Race
                 double i = 0.5;
                 //foreach (Car car in cars.ToDictionary(p => _random.Next()).OrderBy(p => p.Key).Select(p => p.Value))
                 foreach (Car car in cars)
-                    {
-                        car.Position = _track.Start.StartPoint() + (i / cars.Count()) * _track.Start.Vector();
+                {
+                    car.Position = _track.Start.StartPoint() + (i / cars.Count()) * _track.Start.Vector();
                     car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(_track.Start.Vector().X, _track.Start.Vector().Y) : -Math.Atan2(-_track.Start.Vector().X, -_track.Start.Vector().Y);
                     car.PowerShape.Area = 100.0;
                     car.Velocity = new Vector();
@@ -90,20 +90,8 @@ namespace Race
                 DrawTrack(annotation);
 
                 ActiveCar = _cars[0];
-                if(PlayerType.Human == ActiveCar.PlayerType)
-                {
-                    DrawTargetEllipse();
-                }
-                else
-                {
-                    _centerLine.Stroke = Brushes.Transparent;
-                    _steeringLine.Stroke = Brushes.Transparent;
-                    Task.Run(async () =>
-                    {
-                        await ActiveCar.WaitForMove();
-                        await Move();
-                    });
-                }
+
+                await WaitForNextMove();
             }
             catch (Exception ex)
             {
@@ -181,8 +169,6 @@ namespace Race
                 Fill = new SolidColorBrush(car.Color),
                 RenderTransform = new RotateTransform(180 * car.Angle / Math.PI, 0.5*w, 0.5*h),
                 Stretch = Stretch.Fill,
-                //Stroke = Brushes.Black,
-                //StrokeThickness = 0.1,
                 Height = h,
                 Width = w,
                 ToolTip = car.Driver,
@@ -211,13 +197,13 @@ namespace Race
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
             };
-            _centerLine.Stroke = new SolidColorBrush(ActiveCar.Color);
+            _centerLine.Stroke = PlayerType.Online == ActiveCar.PlayerType ? Brushes.Transparent : new SolidColorBrush(ActiveCar.Color);
             _centerLine.X1 = ActiveCar.Position.X;
             _centerLine.Y1 = ActiveCar.Position.Y;
             _centerLine.X2 = center.X;
             _centerLine.Y2 = center.Y;
 
-            _steeringLine.Stroke = new SolidColorBrush(ActiveCar.Color);
+            _steeringLine.Stroke = PlayerType.Online == ActiveCar.PlayerType ? Brushes.Transparent : new SolidColorBrush(ActiveCar.Color);
             _steeringLine.X1 = center.X;
             _steeringLine.Y1 = center.Y;
             _steeringLine.X2 = target.X;
@@ -265,11 +251,14 @@ namespace Race
 
         public async Task Move()
         {
-            foreach(Car car in _cars)
+            if(PlayerType.Online != ActiveCar.PlayerType)
             {
-                if(PlayerType.Online == car.PlayerType)
+                foreach(Car car in _cars)
                 {
-                    car.NetworkConnector.ConfirmMove(new MoveParameter(ActiveCar.TargetAngle, ActiveCar.TargetPower));
+                    if(PlayerType.Online == car.PlayerType)
+                    {
+                        car.NetworkConnector.ConfirmMove(new MoveParameter(ActiveCar.TargetAngle, ActiveCar.TargetPower));
+                    }
                 }
             }
 
@@ -291,28 +280,23 @@ namespace Race
             }
 
             ActiveCar.Move(crashLength);
+            DrawCar(ActiveCar);
 
             if (IsWin())
             {
                 MessageBox.Show($"{ActiveCar.Driver} Wins the race!", "Winner");
             }
 
-            DrawCar(ActiveCar);
-
             ActiveCar = _cars[++CarIndex % _cars.Count];
 
-            if(PlayerType.Online == ActiveCar.PlayerType)
-            {
-                _steeringLine.Stroke = Brushes.Transparent;
-                _centerLine.Stroke = Brushes.Transparent;
-                await ActiveCar.WaitForMove();
-                await Move();
-            }
-            else
-            {
-                DrawTargetEllipse();
-            }
+            await WaitForNextMove();
+        }
 
+        private async Task WaitForNextMove()
+        {
+            DrawTargetEllipse();
+            await ActiveCar.WaitForMove();
+            await Move();
         }
 
         private void Canvas_MouseDown(object sender, MouseButtonEventArgs e)

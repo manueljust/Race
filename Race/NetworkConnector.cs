@@ -15,19 +15,13 @@ namespace Race
         private TcpClient _client;
         private StreamWriter _writer;
         private StreamReader _reader;
-        private Task _requestHandler;
         private CancellationTokenSource _cts = new CancellationTokenSource();
-        //private ConcurrentQueue<string> _inBuffer = new ConcurrentQueue<string>();
-
 
         public NetworkConnector(TcpClient client)
         {
             _client = client;
             _writer = new StreamWriter(client.GetStream());
             _reader = new StreamReader(client.GetStream());
-
-            //_requestHandler = new Task(BufferReader, _cts.Token, TaskCreationOptions.LongRunning);
-            //_requestHandler.Start();
         }
 
         private async Task<string> ReadLineAsync()
@@ -46,16 +40,17 @@ namespace Race
 
         public void Close()
         {
+            _cts.Cancel();
             _writer.Close();
             _reader.Close();
             _client.Close();
-            _cts.Cancel();
-            _requestHandler.Wait();
         }
 
         public async Task<Car> GetRemoteCar()
         {
-            return Car.FromString(await GetResponse());
+            Car car = Car.FromString(await GetResponse());
+            car.NetworkConnector = this;
+            return car;
         }
 
         public async Task<MoveParameter> GetMoveParameter()
@@ -96,7 +91,6 @@ namespace Race
         private async Task<string> GetResponse()
         {
             return await ReadLineAsync();
-            //return await _inBuffer.DequeueAsync(_cts.Token);
         }
     }
 }

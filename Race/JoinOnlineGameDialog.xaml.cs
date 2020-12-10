@@ -35,10 +35,7 @@ namespace Race
             _networkConnector.ConfirmStart(Result.Cars.First());
 
             infoBox.Text += " waiting for hosst to start";
-            Car host = await _networkConnector.GetRemoteCar();
-            host.PlayerType = PlayerType.Online;
-            host.NetworkConnector = _networkConnector;
-            Result.Cars.Insert(0, host);
+            Result.Cars.Insert(0, await _networkConnector.GetRemoteCar());
 
             DialogResult = true;
             Close();
