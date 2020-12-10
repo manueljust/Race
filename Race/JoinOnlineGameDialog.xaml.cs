@@ -32,11 +32,13 @@ namespace Race
 
         private async void ButtonStart_Click(object sender, RoutedEventArgs e)
         {
+            _networkConnector.ConfirmStart(Result.Cars.First());
+
             infoBox.Text += " waiting for hosst to start";
             Car host = await _networkConnector.GetRemoteCar();
             host.PlayerType = PlayerType.Online;
             host.NetworkConnector = _networkConnector;
-            Result.Cars.Add(host);
+            Result.Cars.Insert(0, host);
 
             DialogResult = true;
             Close();
@@ -48,22 +50,25 @@ namespace Race
             {
                 infoBox.Text += $" ip {address} parsed successfully.";
 
-                string local = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => AddressFamily.InterNetwork == ip.AddressFamily).Select(ip => ip.ToString()).FirstOrDefault();
+                //string local = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => AddressFamily.InterNetwork == ip.AddressFamily).Select(ip => ip.ToString()).FirstOrDefault();
+                string local = "127.0.0.1";
                 if (null != local && IPAddress.TryParse(local, out IPAddress localAddress))
                 {
-                    TcpClient client = new TcpClient(new IPEndPoint(localAddress, 5001));
+                    TcpClient client = new TcpClient(new IPEndPoint(localAddress, 5002));
                     client.Connect(new IPEndPoint(address, 5001));
                     if (client.Connected)
                     {
+                        ipStuff.IsEnabled = false;
                         _networkConnector = new NetworkConnector(client);
+                        infoBox.Text += $" connected to {address}, waiting for track info.";
                         Result = await _networkConnector.GetTrackInfo();
                         Car car = new Car()
                         {
-                            Driver = "guest",
+                            Driver = "Guest",
                         };
                         Result.Cars.Add(car);
-                        ipStuff.IsEnabled = false;
                         startButton.IsEnabled = true;
+                        infoBox.Text += $" ok. let's race on {Result.TrackFileName} in {Result.RaceDirection} direction. choose your car and hit start";
                     }
                     else
                     {

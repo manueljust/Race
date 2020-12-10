@@ -73,9 +73,10 @@ namespace Race
                 _track = SvgHelper.Load(filename);
 
                 double i = 0.5;
-                foreach (Car car in cars.ToDictionary(p => _random.Next()).OrderBy(p => p.Key).Select(p => p.Value))
-                {
-                    car.Position = _track.Start.StartPoint() + (i / cars.Count()) * _track.Start.Vector();
+                //foreach (Car car in cars.ToDictionary(p => _random.Next()).OrderBy(p => p.Key).Select(p => p.Value))
+                foreach (Car car in cars)
+                    {
+                        car.Position = _track.Start.StartPoint() + (i / cars.Count()) * _track.Start.Vector();
                     car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(_track.Start.Vector().X, _track.Start.Vector().Y) : -Math.Atan2(-_track.Start.Vector().X, -_track.Start.Vector().Y);
                     car.PowerShape.Area = 100.0;
                     car.Velocity = new Vector();

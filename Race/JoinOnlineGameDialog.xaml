@@ -10,10 +10,10 @@
     <StackPanel>
         <StackPanel x:Name="ipStuff" Orientation="Horizontal">
             <Label Content="IP"/>
-            <TextBox x:Name="ipBox" Width="200" />
+            <TextBox x:Name="ipBox" Width="200" Text="127.0.0.1" />
             <Button Content="connect" Click="ButtonConnect_Click" />
         </StackPanel>
-        <TextBlock x:Name="infoBox" Text="Enter IP of opponent" />
+        <TextBlock x:Name="infoBox" Text="Enter IP of opponent" TextWrapping="Wrap" />
         <Button x:Name="startButton" Content="Start" Click="ButtonStart_Click"/>
     </StackPanel>
 </Window>

@@ -31,7 +31,7 @@ namespace Race
             Result.Cars.Add(new Car() { Driver = "Host", Color = Colors.Blue });
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void ButtonStart_Click(object sender, RoutedEventArgs e)
         {
             foreach(Car car in Result.Cars)
             {
@@ -49,8 +49,10 @@ namespace Race
         {
             trackSelector.IsEnabled = false;
             directionSelector.IsEnabled = false;
+            hostButton.IsEnabled = false;
             infoBox.Text = $"Waiting for opponent.";
-            string local = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => AddressFamily.InterNetwork == ip.AddressFamily).Select(ip => ip.ToString()).FirstOrDefault();
+            //string local = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => AddressFamily.InterNetwork == ip.AddressFamily).Select(ip => ip.ToString()).FirstOrDefault();
+            string local = "127.0.0.1";
             if(null != local && IPAddress.TryParse(local, out IPAddress address))
             {
                 TcpListener listener = new TcpListener(address, 5001);
@@ -59,13 +61,11 @@ namespace Race
 
                 // get driver, color and powershape from remote
                 NetworkConnector c = new NetworkConnector(await listener.AcceptTcpClientAsync());
-                infoBox.Text += $" accepted connection from {c}. waiting for opponent to chose car.";
-
-                // allow guest to setup read buffer
-                await Task.Delay(TimeSpan.FromSeconds(1));
                 c.SendTrackInfo(Result);
 
+                infoBox.Text += $" accepted connection from {c}. waiting for opponent to chose car.";
                 Car car = await c.GetRemoteCar();
+
                 car.PlayerType = PlayerType.Online;
                 car.NetworkConnector = c;
                 Result.Cars.Add(car);

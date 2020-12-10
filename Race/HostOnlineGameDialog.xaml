@@ -33,8 +33,8 @@
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Counterclockwise}, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
-        <Button Grid.Row="2" Grid.ColumnSpan="2" Content="Host" Click="ButtonHost_Click"/>
-        <TextBlock Grid.Row="3" Grid.ColumnSpan="2"  x:Name="infoBox" Text="Click Host to advertie game" />
-        <Button Grid.Row="4" Grid.ColumnSpan="2" x:Name="startButton" IsEnabled="False" Content="Start" Click="Button_Click"/>
+        <Button Grid.Row="2" Grid.ColumnSpan="2" x:Name="hostButton" Content="Host" Click="ButtonHost_Click"/>
+        <TextBlock Grid.Row="3" Grid.ColumnSpan="2"  x:Name="infoBox" Text="Click Host to advertie game" TextWrapping="Wrap" />
+        <Button Grid.Row="4" Grid.ColumnSpan="2" x:Name="startButton" IsEnabled="False" Content="Start" Click="ButtonStart_Click"/>
     </Grid>
 </Window>

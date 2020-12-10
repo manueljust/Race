@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
@@ -16,7 +17,7 @@ namespace Race
         private StreamReader _reader;
         private Task _requestHandler;
         private CancellationTokenSource _cts = new CancellationTokenSource();
-        private ConcurrentQueue<string> _inBuffer = new ConcurrentQueue<string>();
+        //private ConcurrentQueue<string> _inBuffer = new ConcurrentQueue<string>();
 
 
         public NetworkConnector(TcpClient client)
@@ -25,29 +26,22 @@ namespace Race
             _writer = new StreamWriter(client.GetStream());
             _reader = new StreamReader(client.GetStream());
 
-            _requestHandler = new Task(async () =>
-            {
-                while(!_cts.IsCancellationRequested)
-                {
-                    // whenany returns the task that completed first
-                    // await that task as well (hence double await)
-                    string s = await await Task.WhenAny(_reader.ReadLineAsync(), GetDelayedNullString(_cts.Token, TimeSpan.FromMilliseconds(100)));
-
-                    if (null != s)
-                    {
-                        _inBuffer.Enqueue(s);
-                    }
-                }
-            },
-            _cts.Token,
-            TaskCreationOptions.LongRunning);
-            _requestHandler.Start();
+            //_requestHandler = new Task(BufferReader, _cts.Token, TaskCreationOptions.LongRunning);
+            //_requestHandler.Start();
         }
 
-        private static async Task<string> GetDelayedNullString(CancellationToken token, TimeSpan delay)
+        private async Task<string> ReadLineAsync()
         {
-            await Task.Run(() => token.WaitHandle.WaitOne(delay));
-            return null;
+            try
+            {
+                // whenany returns the task that completed first
+                // await that task as well (hence double await)
+                return await await Task.WhenAny(_reader.ReadLineAsync(), Task.Run(() => { _cts.Token.WaitHandle.WaitOne(); return default(string); }));
+            }
+            catch
+            {
+                return default;
+            }
         }
 
         public void Close()
@@ -75,6 +69,7 @@ namespace Race
             Dictionary<string, string> d = resultString.ToDictionary();
             return new NewGameDialogResult()
             {
+                Cars = new ObservableCollection<Car>(),
                 TrackFileName = d["track"],
                 RaceDirection = (RaceDirection)Enum.Parse(typeof(RaceDirection), d["direction"]),
             };
@@ -98,9 +93,10 @@ namespace Race
             _writer.Flush();
         }
 
-        private async Task<string> GetResponse(TimeSpan timeout = default)
+        private async Task<string> GetResponse()
         {
-            return await _inBuffer.DequeueAsync(_cts.Token, timeout);
+            return await ReadLineAsync();
+            //return await _inBuffer.DequeueAsync(_cts.Token);
         }
     }
 }
