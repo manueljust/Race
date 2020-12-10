@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -20,6 +21,8 @@ namespace Race
         public MainWindow()
         {
             InitializeComponent();
+
+            Loaded += async (o, e) => await Game.NewGame(@"Tracks\Track1.svg", Car.DefaultCars, 0 == new Random().Next() % 2 ? RaceDirection.Clockwise : RaceDirection.Counterclockwise, "local");
         }
 
         private async void thisMW_KeyUp(object sender, KeyEventArgs e)
@@ -35,30 +38,30 @@ namespace Race
             await Game.ActiveCar.ConfirmMove();
         }
 
-        private void OnNew(object sender, ExecutedRoutedEventArgs e)
+        private async void OnNew(object sender, ExecutedRoutedEventArgs e)
         {
             NewGameDialog dlg = new NewGameDialog();
             dlg.ShowDialog();
-
-            Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "local");
-
             e.Handled = true;
+
+            await Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "local");
+
         }
 
-        private void JoinOnline_Click(object sender, RoutedEventArgs e)
+        private async void JoinOnline_Click(object sender, RoutedEventArgs e)
         {
             JoinOnlineGameDialog dlg = new JoinOnlineGameDialog();
             dlg.ShowDialog();
 
-            Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "guest");
+            await Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "guest");
         }
 
-        private void HostOnline_Click(object sender, RoutedEventArgs e)
+        private async void HostOnline_Click(object sender, RoutedEventArgs e)
         {
             HostOnlineGameDialog dlg = new HostOnlineGameDialog();
             dlg.ShowDialog();
 
-            Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "host");
+            await Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "host");
         }
     }
 }

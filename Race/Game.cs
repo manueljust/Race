@@ -58,8 +58,6 @@ namespace Race
         public Game()
         {
             Canvas = new Canvas();
-
-            NewGame(@"Tracks\Track1.svg", Car.DefaultCars, 0 == _random.Next() % 2 ? RaceDirection.Clockwise : RaceDirection.Counterclockwise, "local");
         }
 
         public async Task NewGame(string filename, IEnumerable<Car> cars, RaceDirection direction, string annotation)
@@ -78,14 +76,12 @@ namespace Race
                 {
                     car.Position = _track.Start.StartPoint() + (i / cars.Count()) * _track.Start.Vector();
                     car.Angle = RaceDirection.Clockwise == direction ? -Math.Atan2(_track.Start.Vector().X, _track.Start.Vector().Y) : -Math.Atan2(-_track.Start.Vector().X, -_track.Start.Vector().Y);
-                    car.PowerShape.Area = 100.0;
                     car.Velocity = new Vector();
                     car.PropertyChanged += Car_PropertyChanged;
                     _trails[car] = new List<Shape>();
                     _cars.Add(car);
                     i += 1;
                 }
-
 
                 DrawTrack(annotation);
 
