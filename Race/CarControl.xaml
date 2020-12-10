@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="Race.CarControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Race"
+             mc:Ignorable="d" 
+             x:Name="thisCC"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" MinWidth="100"/>
+            <ColumnDefinition MinWidth="200" />
+            <ColumnDefinition Width="auto" MinWidth="80" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+            <TextBlock Text="Driver Name" />
+            <TextBox Text="{Binding ElementName=thisCC, Path=Car.Driver, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1">
+            <TextBlock Text="Powershape" />
+            <local:PowerShapeControl PowerShape="{Binding ElementName=thisCC, Path=Car.PowerShape}" />
+        </StackPanel>
+        <StackPanel Grid.Column="2">
+            <TextBlock Text="Color" />
+            <ComboBox ItemsSource="{x:Static local:Car.PredefinedColors}" SelectedValue="{Binding ElementName=thisCC, Path=Car.Color, UpdateSourceTrigger=PropertyChanged}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle Width="16" Height="16" Margin="0,2,5,2">
+                                <Rectangle.Fill>
+                                    <SolidColorBrush Color="{Binding .}" />
+                                </Rectangle.Fill>
+                            </Rectangle>
+                            <TextBlock Text="{Binding .}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -57,6 +57,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CarControl.xaml.cs">
+      <DependentUpon>CarControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="HostOnlineGameDialog.xaml.cs">
       <DependentUpon>HostOnlineGameDialog.xaml</DependentUpon>
     </Compile>
@@ -88,6 +91,10 @@
     <Compile Include="Track.cs" />
     <Compile Include="Tracks.cs" />
     <Compile Include="Util\XElementExtensions.cs" />
+    <Page Include="CarControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="HostOnlineGameDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

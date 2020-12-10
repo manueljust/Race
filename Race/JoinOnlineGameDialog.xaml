@@ -14,6 +14,7 @@
             <Button Content="connect" Click="ButtonConnect_Click" />
         </StackPanel>
         <TextBlock x:Name="infoBox" Text="Enter IP of opponent" TextWrapping="Wrap" />
+        <local:CarControl x:Name="carControl" Car="{Binding ElementName=thisNGD, Path=MyCar}" />
         <Button x:Name="startButton" Content="Start" Click="ButtonStart_Click"/>
     </StackPanel>
 </Window>

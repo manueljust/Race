@@ -22,6 +22,8 @@ namespace Race
     public partial class JoinOnlineGameDialog : Window
     {
         public NewGameDialogResult Result { get; set; } = new NewGameDialogResult();
+        public Car MyCar { get; } = new Car() { Driver = "Guest", Color = Colors.Red };
+
         private NetworkConnector _networkConnector = null;
 
         public JoinOnlineGameDialog()
@@ -32,6 +34,7 @@ namespace Race
 
         private async void ButtonStart_Click(object sender, RoutedEventArgs e)
         {
+            carControl.IsEnabled = false;
             _networkConnector.ConfirmStart(Result.Cars.First());
 
             infoBox.Text += " waiting for hosst to start";
@@ -59,11 +62,7 @@ namespace Race
                         _networkConnector = new NetworkConnector(client);
                         infoBox.Text += $" connected to {address}, waiting for track info.";
                         Result = await _networkConnector.GetTrackInfo();
-                        Car car = new Car()
-                        {
-                            Driver = "Guest",
-                        };
-                        Result.Cars.Add(car);
+                        Result.Cars.Add(MyCar);
                         startButton.IsEnabled = true;
                         infoBox.Text += $" ok. let's race on {Result.TrackFileName} in {Result.RaceDirection} direction. choose your car and hit start";
                     }

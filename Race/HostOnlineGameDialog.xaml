@@ -17,6 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -35,6 +36,8 @@
         </StackPanel>
         <Button Grid.Row="2" Grid.ColumnSpan="2" x:Name="hostButton" Content="Host" Click="ButtonHost_Click"/>
         <TextBlock Grid.Row="3" Grid.ColumnSpan="2"  x:Name="infoBox" Text="Click Host to advertie game" TextWrapping="Wrap" />
-        <Button Grid.Row="4" Grid.ColumnSpan="2" x:Name="startButton" IsEnabled="False" Content="Start" Click="ButtonStart_Click"/>
+        <Label Grid.Row="4" Grid.Column="0" Content="My Car" />
+        <local:CarControl Grid.Row="4" Grid.Column="1" x:Name="myCarControl" Car="{Binding ElementName=thisNGD, Path=MyCar}" />
+        <Button Grid.Row="5" Grid.ColumnSpan="2" x:Name="startButton" IsEnabled="False" Content="Start" Click="ButtonStart_Click"/>
     </Grid>
 </Window>

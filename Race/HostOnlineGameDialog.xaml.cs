@@ -24,11 +24,13 @@ namespace Race
     {
         public NewGameDialogResult Result { get; } = new NewGameDialogResult();
 
+        public Car MyCar { get; } = new Car() { Driver = "Host", Color = Colors.Blue };
+
         public HostOnlineGameDialog()
         {
             InitializeComponent();
             Result.Cars.Clear();
-            Result.Cars.Add(new Car() { Driver = "Host", Color = Colors.Blue });
+            Result.Cars.Add(MyCar);
         }
 
         private void ButtonStart_Click(object sender, RoutedEventArgs e)
