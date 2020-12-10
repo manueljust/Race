@@ -80,7 +80,7 @@ namespace Race
 
         public string GetStringRepresentation()
         {
-            return $"driver:{Driver},color:{Color},ps.acc:{PowerShape.Acceleration},ps.dec:{PowerShape.Deceleration},ps.tr:{PowerShape.Deceleration},ps.edg:{PowerShape.Edgyness},ps.ar:{PowerShape.Area}";
+            return $"driver:{Driver},color:{Color},ps.acc:{PowerShape.Acceleration},ps.dec:{PowerShape.Deceleration},ps.tr:{PowerShape.TurnRatio},ps.edg:{PowerShape.Edgyness},ps.ar:{PowerShape.Area}";
         }
 
         public static Car FromString(string s)
