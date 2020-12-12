@@ -14,7 +14,7 @@
             <ColumnDefinition Width="auto" MinWidth="80" />
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0">
-            <TextBlock Text="Driver Name" />
+            <TextBlock Text="Name" />
             <TextBox Text="{Binding ElementName=thisCC, Path=Car.Driver, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
         <StackPanel Grid.Column="1">

@@ -71,6 +71,7 @@
     </Compile>
     <Compile Include="PlayerType.cs" />
     <Compile Include="Util\ConcurrentQueueExtensions.cs" />
+    <Compile Include="Util\Crc16.cs" />
     <Compile Include="Util\LineExtensions.cs" />
     <Compile Include="Util\Parser.cs" />
     <Compile Include="Util\PathFigureExtensions.cs" />
@@ -84,6 +85,7 @@
       <DependentUpon>PowerShapeControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="RaceDirection.cs" />
+    <Compile Include="Util\Serializer.cs" />
     <Compile Include="Util\ShapeExtensions.cs" />
     <Compile Include="Util\StringExtensions.cs" />
     <Compile Include="Util\SvgHelper.cs" />

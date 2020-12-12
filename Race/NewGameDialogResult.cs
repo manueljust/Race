@@ -24,5 +24,12 @@ namespace Race
             get { return _raceDirection; }
             set { SetProperty(ref _raceDirection, value); }
         }
+
+        private byte[] _trackSum = new byte[16];
+        public byte[] TrackSum
+        {
+            get { return _trackSum; }
+            set { SetProperty(ref _trackSum, value); }
+        }
     }
 }
