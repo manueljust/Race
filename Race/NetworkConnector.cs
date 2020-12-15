@@ -10,13 +10,30 @@ using System.Threading.Tasks;
 
 namespace Race
 {
-    public class NetworkConnector
+    public class NetworkConnector : PropertyChangedAware
     {
         private TcpClient _client;
+
+        public string IPAddress { get; }
+
+        private bool _lockInTrack = false;
+        public bool LockInTrack
+        {
+            get { return _lockInTrack; }
+            set { SetProperty(ref _lockInTrack, value); }
+        }
+
+        private bool _isReady = false;
+        public bool IsReady
+        {
+            get { return _isReady; }
+            set { SetProperty(ref _isReady, value); }
+        }
 
         public NetworkConnector(TcpClient client)
         {
             _client = client;
+            IPAddress = client.Client.RemoteEndPoint.AddressFamily.ToString();
         }
 
         public async Task<Car> GetRemoteCar()

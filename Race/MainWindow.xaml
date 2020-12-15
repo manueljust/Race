@@ -16,7 +16,7 @@
             <MenuItem Header="Game">
                 <MenuItem Header="New Local Game" Command="New" />
                 <MenuItem Header="Join Online Game" Click="JoinOnline_Click" />
-                <MenuItem Header="Host Online Game" Click="HostOnline_Click" />
+                <MenuItem Header="Create Online Game" Click="CreateOnline_Click" />
             </MenuItem>
         </Menu>
         <StackPanel DockPanel.Dock="Bottom">

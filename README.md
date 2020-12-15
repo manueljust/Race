@@ -21,3 +21,14 @@ Work in progress.
   - type: byte indicating the data type of the payload (see PayloadType enum)
   - palyoad: variable length payload buffer
   - stop:  0x63
+
+### New Game Protocol
+ * Host uses "create online game" dialog
+   - has a tcpserver listening for connections
+   - negotiates connections between peers
+   - connecting peer receives current selected track
+   - connected peer may change track or accept
+   - if a change received, accept state is reset
+   - if all players accept, track change is locked and car selection enabled
+   - when all players have chosen car and clicked start, game is started
+   - host determines order randomly

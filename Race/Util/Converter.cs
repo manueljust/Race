@@ -20,4 +20,17 @@ namespace Race.Util
             return value?.Equals(true) == true ? parameter : Binding.DoNothing;
         }
     }
+
+    public class InverseBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return false == (bool)value;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return false == (bool)value;
+        }
+    }
 }

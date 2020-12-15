@@ -60,6 +60,9 @@
     <Compile Include="CarControl.xaml.cs">
       <DependentUpon>CarControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="OnlineGameDialog.xaml.cs">
+      <DependentUpon>OnlineGameDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PayloadType.cs" />
     <Compile Include="HostOnlineGameDialog.xaml.cs">
       <DependentUpon>HostOnlineGameDialog.xaml</DependentUpon>
@@ -98,6 +101,10 @@
     <Page Include="CarControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="OnlineGameDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="HostOnlineGameDialog.xaml">
       <SubType>Designer</SubType>

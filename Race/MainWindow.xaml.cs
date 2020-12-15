@@ -56,9 +56,9 @@ namespace Race
             await Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "guest");
         }
 
-        private async void HostOnline_Click(object sender, RoutedEventArgs e)
+        private async void CreateOnline_Click(object sender, RoutedEventArgs e)
         {
-            HostOnlineGameDialog dlg = new HostOnlineGameDialog();
+            OnlineGameDialog dlg = new OnlineGameDialog(true);
             dlg.ShowDialog();
 
             await Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "host");
