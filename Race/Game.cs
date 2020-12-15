@@ -253,7 +253,7 @@ namespace Race
                 {
                     if(PlayerType.Online == car.PlayerType)
                     {
-                        car.NetworkConnector.ConfirmMove(new MoveParameter(ActiveCar.TargetAngle, ActiveCar.TargetPower));
+                        await car.NetworkConnector.ConfirmMove(new MoveParameter(ActiveCar.TargetAngle, ActiveCar.TargetPower));
                     }
                 }
             }

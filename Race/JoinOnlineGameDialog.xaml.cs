@@ -35,7 +35,7 @@ namespace Race
         private async void ButtonStart_Click(object sender, RoutedEventArgs e)
         {
             carControl.IsEnabled = false;
-            _networkConnector.ConfirmStart(Result.Cars.First());
+            await _networkConnector.ConfirmStart(Result.Cars.First());
 
             infoBox.Text += " waiting for hosst to start";
             Result.Cars.Insert(0, await _networkConnector.GetRemoteCar());

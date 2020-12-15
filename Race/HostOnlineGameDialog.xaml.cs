@@ -33,13 +33,13 @@ namespace Race
             Result.Cars.Add(MyCar);
         }
 
-        private void ButtonStart_Click(object sender, RoutedEventArgs e)
+        private async void ButtonStart_Click(object sender, RoutedEventArgs e)
         {
             foreach(Car car in Result.Cars)
             {
                 if(PlayerType.Online == car.PlayerType)
                 {
-                    car.NetworkConnector.ConfirmStart(Result.Cars.First());
+                    await car.NetworkConnector.ConfirmStart(Result.Cars.First());
                 }
             }
 
@@ -63,7 +63,7 @@ namespace Race
 
                 // get driver, color and powershape from remote
                 NetworkConnector c = new NetworkConnector(await listener.AcceptTcpClientAsync());
-                c.SendTrackInfo(Result);
+                await c.SendTrackInfo(Result);
 
                 infoBox.Text += $" accepted connection from {c}. waiting for opponent to chose car.";
                 Result.Cars.Add(await c.GetRemoteCar());

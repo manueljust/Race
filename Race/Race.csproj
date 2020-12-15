@@ -60,18 +60,19 @@
     <Compile Include="CarControl.xaml.cs">
       <DependentUpon>CarControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PayloadType.cs" />
     <Compile Include="HostOnlineGameDialog.xaml.cs">
       <DependentUpon>HostOnlineGameDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="MoveParameter.cs" />
     <Compile Include="NetworkConnector.cs" />
+    <Compile Include="NetworkMessage.cs" />
     <Compile Include="NewGameDialogResult.cs" />
     <Compile Include="JoinOnlineGameDialog.xaml.cs">
       <DependentUpon>JoinOnlineGameDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="PlayerType.cs" />
     <Compile Include="Util\ConcurrentQueueExtensions.cs" />
-    <Compile Include="Util\Crc16.cs" />
     <Compile Include="Util\LineExtensions.cs" />
     <Compile Include="Util\Parser.cs" />
     <Compile Include="Util\PathFigureExtensions.cs" />
@@ -87,6 +88,7 @@
     <Compile Include="RaceDirection.cs" />
     <Compile Include="Util\Serializer.cs" />
     <Compile Include="Util\ShapeExtensions.cs" />
+    <Compile Include="Util\StreamExtensions.cs" />
     <Compile Include="Util\StringExtensions.cs" />
     <Compile Include="Util\SvgHelper.cs" />
     <Compile Include="PropertyChangedAware.cs" />

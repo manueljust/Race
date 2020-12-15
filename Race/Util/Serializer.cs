@@ -11,17 +11,17 @@ namespace Race.Util
 {
     public static class Serializer
     {
-        public static byte[] GetBytes(object obj, NetworkConnector.Message.PayloadType type)
+        public static byte[] GetBytes(object obj, PayloadType type)
         {
             switch(type)
             {
-                case NetworkConnector.Message.PayloadType.Car:
+                case PayloadType.Car:
                     return GetBytes((Car)obj);
-                case NetworkConnector.Message.PayloadType.MoveParameter:
+                case PayloadType.MoveParameter:
                     return GetBytes((MoveParameter)obj);
-                case NetworkConnector.Message.PayloadType.NewGameDialogResult:
+                case PayloadType.NewGameDialogResult:
                     return GetBytes((NewGameDialogResult)obj);
-                case NetworkConnector.Message.PayloadType.TrackBytes:
+                case PayloadType.TrackBytes:
                     return (byte[])obj;
                 default:
                     throw new ArgumentException($"Can not convert from type {type}.");
@@ -66,17 +66,17 @@ namespace Race.Util
             return buffer.ToArray();
         }
 
-        internal static object ToObject(NetworkConnector.Message.PayloadType type, byte[] messageBuffer, int offset, int length)
+        internal static object ToObject(PayloadType type, byte[] messageBuffer, int offset, int length)
         {
             switch (type)
             {
-                case NetworkConnector.Message.PayloadType.Car:
-                    return Serializer.ToCar(messageBuffer, offset, length);
-                case NetworkConnector.Message.PayloadType.MoveParameter:
-                   return Serializer.ToMoveParameter(messageBuffer, offset, length);
-                case NetworkConnector.Message.PayloadType.NewGameDialogResult:
-                    return Serializer.ToNewGameDialogResult(messageBuffer, offset, length);
-                case NetworkConnector.Message.PayloadType.TrackBytes:
+                case PayloadType.Car:
+                    return ToCar(messageBuffer, offset, length);
+                case PayloadType.MoveParameter:
+                   return ToMoveParameter(messageBuffer, offset, length);
+                case PayloadType.NewGameDialogResult:
+                    return ToNewGameDialogResult(messageBuffer, offset, length);
+                case PayloadType.TrackBytes:
                     byte[] bytes = new byte[length];
                     Array.Copy(messageBuffer, offset, bytes, 0, length);
                     return bytes;
@@ -112,7 +112,7 @@ namespace Race.Util
             return new NewGameDialogResult()
             {
                 RaceDirection = (RaceDirection)bytes[0 + offset],
-                TrackFileName = Encoding.UTF8.GetString(bytes, 17 + offset, length - 129),
+                TrackFileName = Encoding.UTF8.GetString(bytes, 17 + offset, length - 17),
                 TrackSum = md5,
             };
         }
