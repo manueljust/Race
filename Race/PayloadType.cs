@@ -6,6 +6,8 @@
         Car,
         TrackBytes,
         NewGameDialogResult,
-        MoveParameter
+        MoveParameter,
+        LockInTrack,
+        CarOrder,
     }
 }

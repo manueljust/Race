@@ -25,9 +25,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Label Grid.Column="0" Grid.Row="0" Content="Track" />
-        <StackPanel Grid.Column="1" Grid.Row="0" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseCar, Converter={StaticResource InverseBooleanConverter}}">
+        <StackPanel Grid.Column="1" Grid.Row="0" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseTrack}">
             <DockPanel LastChildFill="True">
                 <Label DockPanel.Dock="Left" Content="Import" />
                 <Button DockPanel.Dock="Right" Content="browse" Click="ButtonBrowse_Click" />
@@ -38,18 +39,22 @@
             </ComboBox>
         </StackPanel>
         <Label Grid.Column="0" Grid.Row="1" DockPanel.Dock="Left" Content="Direction" />
-        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal"  IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseCar, Converter={StaticResource InverseBooleanConverter}}">
+        <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal"  IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseTrack}">
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
             <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Counterclockwise}, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
-        <Button Grid.Row="2" Grid.Column="1" Content="Lock in Track" Click="ButtonLockIn_Click" />
+        <Button Grid.Row="2" Grid.Column="1" Content="Lock in Track" Click="ButtonLockIn_Click" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseTrack}" />
         <Rectangle Grid.Row="3" Grid.Column="0" Fill="LightGoldenrodYellow" />
-        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="infoBox" Text="Click Host to advertie game" TextWrapping="Wrap" Background="LightGoldenrodYellow" />
+        <TextBlock Grid.Row="3" Grid.Column="1" x:Name="infoBox" Text="INFO" TextWrapping="Wrap" Background="LightGoldenrodYellow" />
         <Label Grid.Row="4" Grid.Column="0" Content="My Car" />
-        <local:CarControl Grid.Row="4" Grid.Column="1" x:Name="myCarControl" Car="{Binding ElementName=thisNGD, Path=MyCar}" />
-        <Button Grid.Row="5" Grid.Column="1" x:Name="startButton" IsEnabled="False" Content="Ready" Click="ButtonStart_Click"/>
+        <local:CarControl Grid.Row="4" Grid.Column="1" Car="{Binding ElementName=thisNGD, Path=MyCar}" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseCar}" />
+        <Button Grid.Row="5" Grid.Column="1" Content="Ready" Click="ButtonStart_Click" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseCar}" />
         <Label Grid.Row="6" Grid.Column="0" Content="Connections" />
-        <DataGrid Grid.Row="6" Grid.Column="1">
-        </DataGrid>
+        <DataGrid Grid.Row="6" Grid.Column="1" ItemsSource="{Binding ElementName=thisOGD, Path=Connections, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" CanUserAddRows="False" />
+        <Label Grid.Row="7" Grid.Column="0" x:Name="ipLabel" Content="Remote IP" Visibility="Collapsed" />
+        <StackPanel Grid.Row="7" Grid.Column="1" x:Name="ipStuff" Orientation="Horizontal" Visibility="Collapsed">
+            <TextBox x:Name="ipBox" Width="200" Text="127.0.0.1" />
+            <Button Content="connect" Click="ButtonConnect_Click" />
+        </StackPanel>
     </Grid>
 </Window>

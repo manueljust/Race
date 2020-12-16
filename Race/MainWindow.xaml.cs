@@ -50,7 +50,7 @@ namespace Race
 
         private async void JoinOnline_Click(object sender, RoutedEventArgs e)
         {
-            JoinOnlineGameDialog dlg = new JoinOnlineGameDialog();
+            OnlineGameDialog dlg = new OnlineGameDialog();
             dlg.ShowDialog();
 
             await Game.NewGame(dlg.Result.TrackFileName, dlg.Result.Cars, dlg.Result.RaceDirection, "guest");

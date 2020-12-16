@@ -92,5 +92,15 @@ namespace Race
                 Payload = move,
             });
         }
+
+        public async Task ConfirmLockIn(bool lockedIn)
+        {
+            System.Diagnostics.Debug.WriteLine($"NetworkConnector.ConfirmLockIn sent 'locked {(lockedIn ? "in" : "out")}'.");
+            await _client.GetStream().Send(new NetworkMessage()
+            {
+                PayloadType = PayloadType.LockInTrack,
+                Payload = lockedIn,
+            });
+        }
     }
 }

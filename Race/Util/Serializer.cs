@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System; 
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,8 +23,37 @@ namespace Race.Util
                     return GetBytes((NewGameDialogResult)obj);
                 case PayloadType.TrackBytes:
                     return (byte[])obj;
+                case PayloadType.LockInTrack:
+                    return new byte[] { (bool)obj ? (byte)0x01 : (byte)0x00 };
+                case PayloadType.CarOrder:
+                    // used to transmit order of who plays next
+                    throw new NotImplementedException();
                 default:
                     throw new ArgumentException($"Can not convert from type {type}.");
+            }
+        }
+
+        internal static object ToObject(PayloadType type, byte[] messageBuffer, int offset, int length)
+        {
+            switch (type)
+            {
+                case PayloadType.Car:
+                    return ToCar(messageBuffer, offset, length);
+                case PayloadType.MoveParameter:
+                    return ToMoveParameter(messageBuffer, offset, length);
+                case PayloadType.NewGameDialogResult:
+                    return ToNewGameDialogResult(messageBuffer, offset, length);
+                case PayloadType.TrackBytes:
+                    byte[] bytes = new byte[length];
+                    Array.Copy(messageBuffer, offset, bytes, 0, length);
+                    return bytes;
+                case PayloadType.LockInTrack:
+                    return 0x01 == messageBuffer[offset];
+                case PayloadType.CarOrder:
+                    // used to transmit order of who plays next
+                    throw new NotImplementedException();
+                default:
+                    throw new ArgumentException($"Can not convert to type {type}.");
             }
         }
 
@@ -64,25 +93,6 @@ namespace Race.Util
             buffer.AddRange(BitConverter.GetBytes(move.Angle));
             buffer.AddRange(BitConverter.GetBytes(move.Power));
             return buffer.ToArray();
-        }
-
-        internal static object ToObject(PayloadType type, byte[] messageBuffer, int offset, int length)
-        {
-            switch (type)
-            {
-                case PayloadType.Car:
-                    return ToCar(messageBuffer, offset, length);
-                case PayloadType.MoveParameter:
-                   return ToMoveParameter(messageBuffer, offset, length);
-                case PayloadType.NewGameDialogResult:
-                    return ToNewGameDialogResult(messageBuffer, offset, length);
-                case PayloadType.TrackBytes:
-                    byte[] bytes = new byte[length];
-                    Array.Copy(messageBuffer, offset, bytes, 0, length);
-                    return bytes;
-                default:
-                    throw new ArgumentException($"Can not convert to type {type}.");
-            }
         }
 
         public static MoveParameter ToMoveParameter(byte[] bytes, int offset = 0, int length = default)

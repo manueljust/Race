@@ -11,7 +11,8 @@ Work in progress.
 * fix pattern import (unintended padding)
 * fix powershape area
 * p2p
-* add networking error correction (request re-send of corrupted frames)
+* implement connection broker
+* implement locked-out notification (event?)
 
 ### Networking
 * Frame definition:<br/>
