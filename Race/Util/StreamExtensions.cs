@@ -43,7 +43,7 @@ namespace Race.Util
                 }
                 if (NetworkMessage.StartByte != headerBuffer[0])
                 {
-                    System.Diagnostics.Debug.WriteLine($"Stream.ReadMessageAsync skipped byte{headerBuffer[0]} before message start.");
+                    System.Diagnostics.Debug.WriteLine($"Stream.ReadMessageAsync skipped byte {headerBuffer[0]:X} before message start.");
                 }
             }
             while (NetworkMessage.StartByte != headerBuffer[0]);

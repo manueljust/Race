@@ -34,11 +34,16 @@ namespace Race
             set { SetValue(LockedInProperty, value); }
         }
 
-        private static void OnLockedInChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static async void OnLockedInChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             OnlineGameDialog dlg = (OnlineGameDialog)d;
             dlg.CanChooseTrack = !(bool)e.NewValue;
             dlg.CanChooseCar = dlg.Connections.All(c => c.LockInTrack) && (bool)e.NewValue;
+
+            foreach (NetworkConnector connector in dlg.Connections)
+            {
+                await connector.ConfirmLockIn((bool)e.NewValue);
+            }
         }
 
         public bool Ready
@@ -71,6 +76,21 @@ namespace Race
             Result.Cars.Clear();
             Result.Cars.Add(MyCar);
 
+            Result.PropertyChanged += async (o, e) =>
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(NewGameDialogResult.TrackFileName):
+                    case nameof(NewGameDialogResult.RaceDirection):
+                        Dispatcher.Invoke(() => LockedIn = false);
+                        foreach(NetworkConnector connector in Connections)
+                        {
+                            await connector.SendTrackInfo(Result);
+                        }
+                        break;
+                }
+            };
+
             if(listenForConnections)
             {
                 CanChooseTrack = true;
@@ -84,12 +104,10 @@ namespace Race
                     listener.Start();
 
                     Loaded += async (o, e) => await GetNextConnectorAsync(listener);
-                    //Task.Run(async () => await );
                 }
             }
             else
             {
-                // connect to host
                 ipLabel.Visibility = Visibility.Visible;
                 ipStuff.Visibility = Visibility.Visible;
             }
@@ -108,6 +126,11 @@ namespace Race
             }
 
             NetworkConnector connector = new NetworkConnector(client);
+            connector.TrackInfoChanged += async (o, e) =>
+            {
+                Result.TrackFileName = e.TrackFileName;
+                Result.RaceDirection = e.RaceDirection;
+            };
             Connections.Add(connector);
             infoBox.Text += $"\r\naccepted connection from {client.Client.RemoteEndPoint}.";
 
@@ -131,14 +154,9 @@ namespace Race
             Close();
         }
 
-        private async void ButtonLockIn_Click(object sender, RoutedEventArgs e)
+        private void ButtonLockIn_Click(object sender, RoutedEventArgs e)
         {
             LockedIn = true;
-
-            foreach(NetworkConnector connector in Connections)
-            {
-                await connector.ConfirmLockIn(true);
-            }
         }
 
         private void ButtonBrowse_Click(object sender, RoutedEventArgs e)

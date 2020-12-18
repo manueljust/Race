@@ -32,7 +32,7 @@
             <DockPanel LastChildFill="True">
                 <Label DockPanel.Dock="Left" Content="Import" />
                 <Button DockPanel.Dock="Right" Content="browse" Click="ButtonBrowse_Click" />
-                <TextBox Text="{Binding ElementName=thisNGD, Path=Result.TrackFileName, Mode=TwoWay}" VerticalContentAlignment="Center" />
+                <TextBox Text="{Binding ElementName=thisOGD, Path=Result.TrackFileName, Mode=TwoWay}" VerticalContentAlignment="Center" />
             </DockPanel>
             <ComboBox SelectedIndex="0">
                 <ComboBoxItem Content="Track 1" />
@@ -40,14 +40,14 @@
         </StackPanel>
         <Label Grid.Column="0" Grid.Row="1" DockPanel.Dock="Left" Content="Direction" />
         <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal"  IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseTrack}">
-            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
-            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisNGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Counterclockwise}, UpdateSourceTrigger=PropertyChanged}" />
+            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Clockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisOGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Clockwise}, UpdateSourceTrigger=PropertyChanged}" />
+            <RadioButton DockPanel.Dock="Left" Margin="5,0" Content="Counterclockwise" VerticalContentAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding ElementName=thisOGD, Path=Result.RaceDirection, Converter={StaticResource ComparisonConverter}, ConverterParameter={x:Static local:RaceDirection.Counterclockwise}, UpdateSourceTrigger=PropertyChanged}" />
         </StackPanel>
         <Button Grid.Row="2" Grid.Column="1" Content="Lock in Track" Click="ButtonLockIn_Click" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseTrack}" />
         <Rectangle Grid.Row="3" Grid.Column="0" Fill="LightGoldenrodYellow" />
         <TextBlock Grid.Row="3" Grid.Column="1" x:Name="infoBox" Text="INFO" TextWrapping="Wrap" Background="LightGoldenrodYellow" />
         <Label Grid.Row="4" Grid.Column="0" Content="My Car" />
-        <local:CarControl Grid.Row="4" Grid.Column="1" Car="{Binding ElementName=thisNGD, Path=MyCar}" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseCar}" />
+        <local:CarControl Grid.Row="4" Grid.Column="1" Car="{Binding ElementName=thisOGD, Path=MyCar}" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseCar}" />
         <Button Grid.Row="5" Grid.Column="1" Content="Ready" Click="ButtonStart_Click" IsEnabled="{Binding ElementName=thisOGD, Path=CanChooseCar}" />
         <Label Grid.Row="6" Grid.Column="0" Content="Connections" />
         <DataGrid Grid.Row="6" Grid.Column="1" ItemsSource="{Binding ElementName=thisOGD, Path=Connections, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" CanUserAddRows="False" />

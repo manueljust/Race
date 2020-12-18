@@ -75,6 +75,7 @@
       <DependentUpon>JoinOnlineGameDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="PlayerType.cs" />
+    <Compile Include="Util\AsyncEventHandlerExtensions.cs" />
     <Compile Include="Util\ConcurrentQueueExtensions.cs" />
     <Compile Include="Util\LineExtensions.cs" />
     <Compile Include="Util\Parser.cs" />
